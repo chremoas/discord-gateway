@@ -14,7 +14,7 @@ service DiscordGateway {
     };
     rpc GetAllRoles (GuildObjectRequest) returns (GetRoleResponse) {
     };
-    rpc CreateRoles (CreateRolesRequest) returns (CreateRolesResponse) {
+    rpc CreateRole (CreateRoleRequest) returns (CreateRolesResponse) {
     };
     rpc GetUser (GetUserRequest) returns (GetUserResponse) {
     };
@@ -42,7 +42,7 @@ message GetRoleResponse {
     repeated Role Roles = 1;
 }
 
-message CreateRolesRequest {
+message CreateRoleRequest {
     string GuildId = 1;
     string Name = 2;
     int32 Color = 3;
