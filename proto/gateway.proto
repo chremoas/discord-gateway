@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package discord.gateway;
+
+enum MemberUpdateOperation {
+    ADD_ROLES = 0;
+    REMOVE_ROLES = 1;
+}
+
+service DiscordGateway {
+    rpc UpdateMember (UpdateMemberRequest) returns (UpdateMemberResponse) {
+    };
+    rpc GetAllMembers (GuildObjectRequest) returns (GetMembersResponse) {
+    };
+    rpc GetAllRoles (GuildObjectRequest) returns (GetRoleResponse) {
+    };
+    rpc CreateRoles (CreateRolesRequest) returns (CreateRolesResponse) {
+    };
+    rpc GetUser (GetUserRequest) returns (GetUserResponse) {
+    };
+}
+
+message UpdateMemberRequest {
+    MemberUpdateOperation Operation = 1;
+    string UserId = 2;
+    repeated string RoleIds = 3;
+}
+
+message UpdateMemberResponse {
+    bool Success = 1;
+}
+
+message GuildObjectRequest {
+    string GuildId = 1;
+}
+
+message GetMembersResponse {
+    repeated Member Members = 1;
+}
+
+message GetRoleResponse {
+    repeated Role Roles = 1;
+}
+
+message CreateRolesRequest {
+    string GuildId = 1;
+    string Name = 2;
+    int32 Color = 3;
+    bool Hoist = 4;
+    int32 Permissions = 5;
+    bool Mentionable = 6;
+}
+
+message CreateRolesResponse {
+    string RoleId = 1;
+}
+
+message GetUserRequest {
+    string UserId = 1;
+}
+
+message GetUserResponse {
+    User User = 1;
+}
+
+message Role {
+    string Id = 1;
+    string Name = 2;
+    bool Managed = 3;
+    bool Mentionable = 4;
+    bool Hoist = 5;
+    int32 Color = 6;
+    int32 Position = 7;
+    int32 Permissions = 8;
+    repeated Member Members = 9;
+}
+
+message Member {
+    string GuildId = 1;
+    string JoinedAt = 2;
+    string Nick = 3;
+    bool Deaf = 4;
+    bool Mute = 5;
+    repeated User User = 6;
+    repeated Role Roles = 7;
+}
+
+message User {
+    string Id = 1;
+    string Email = 2;
+    string Username = 3;
+    string Avatar = 4;
+    string Discriminator = 5;
+    string Token = 6;
+    bool Verified = 7;
+    bool MFAEnabled = 8;
+    bool Bot = 9;
+}
