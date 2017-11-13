@@ -3,8 +3,8 @@ syntax = "proto3";
 package discord.gateway;
 
 enum MemberUpdateOperation {
-    ADD_ROLES = 0;
-    REMOVE_ROLES = 1;
+    ADD_OR_UPDATE_ROLES = 0;
+    REMOVE_ROLE = 1;
 }
 
 service DiscordGateway {
@@ -28,6 +28,7 @@ message UpdateMemberRequest {
 
 message UpdateMemberResponse {
     bool Success = 1;
+    string Message = 2;
 }
 
 message GuildObjectRequest {
