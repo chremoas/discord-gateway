@@ -82,7 +82,7 @@ message Member {
     string Nick = 3;
     bool Deaf = 4;
     bool Mute = 5;
-    repeated User User = 6;
+    User User = 6;
     repeated Role Roles = 7;
 }
 
