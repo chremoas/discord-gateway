@@ -46,7 +46,7 @@ func (_mr *_MockDiscordGatewayClientRecorder) UpdateMember(arg0, arg1 interface{
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateMember", _s...)
 }
 
-func (_m *MockDiscordGatewayClient) GetAllMembers(ctx context.Context, in *GuildObjectRequest, opts ...client.CallOption) (*GetMembersResponse, error) {
+func (_m *MockDiscordGatewayClient) GetAllMembers(ctx context.Context, in *GetAllMembersRequest, opts ...client.CallOption) (*GetMembersResponse, error) {
 	_s := []interface{}{ctx, in}
 	for _, _x := range opts {
 		_s = append(_s, _x)
@@ -141,7 +141,7 @@ func (_mr *_MockDiscordGatewayHandlerRecorder) UpdateMember(arg0, arg1, arg2 int
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateMember", arg0, arg1, arg2)
 }
 
-func (_m *MockDiscordGatewayHandler) GetAllMembers(_param0 context.Context, _param1 *GuildObjectRequest, _param2 *GetMembersResponse) error {
+func (_m *MockDiscordGatewayHandler) GetAllMembers(_param0 context.Context, _param1 *GetAllMembersRequest, _param2 *GetMembersResponse) error {
 	ret := _m.ctrl.Call(_m, "GetAllMembers", _param0, _param1, _param2)
 	ret0, _ := ret[0].(error)
 	return ret0

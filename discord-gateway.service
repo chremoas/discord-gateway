@@ -1,0 +1,14 @@
+[Unit]
+Description=discord-gateway service
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User=chremoas
+Environment=GOMAXPROCS=2
+Restart=on-failure
+ExecStart=/opt/chremoas/discord-gateway --configuration_file=/etc/chremoas/discord-gateway.yaml
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target

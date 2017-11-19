@@ -4,13 +4,13 @@ package discord.gateway;
 
 enum MemberUpdateOperation {
     ADD_OR_UPDATE_ROLES = 0;
-    REMOVE_ROLE = 1;
+    REMOVE_ROLES = 1;
 }
 
 service DiscordGateway {
     rpc UpdateMember (UpdateMemberRequest) returns (UpdateMemberResponse) {
     };
-    rpc GetAllMembers (GuildObjectRequest) returns (GetMembersResponse) {
+    rpc GetAllMembers (GetAllMembersRequest) returns (GetMembersResponse) {
     };
     rpc GetAllRoles (GuildObjectRequest) returns (GetRoleResponse) {
     };
@@ -21,14 +21,21 @@ service DiscordGateway {
 }
 
 message UpdateMemberRequest {
-    MemberUpdateOperation Operation = 1;
-    string UserId = 2;
-    repeated string RoleIds = 3;
+    string GuildId = 1;
+    MemberUpdateOperation Operation = 2;
+    string UserId = 3;
+    repeated string RoleIds = 4;
 }
 
 message UpdateMemberResponse {
     bool Success = 1;
     string Message = 2;
+}
+
+message GetAllMembersRequest {
+    string GuildId = 1;
+    string After = 2;
+    int32 NumberPerPage = 3;
 }
 
 message GuildObjectRequest {

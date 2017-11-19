@@ -1,0 +1,8 @@
+namespace: the namespace where you micro bot is at
+name: the name of the command of this bot
+bot:
+  botToken: You bot token here, do not prepend Bot... we'll do that for you
+  discordServerId: https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-server-ID-
+registry:
+  hostname: localhost
+  port: 8500

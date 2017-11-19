@@ -1,0 +1,8 @@
+language: go
+sudo: false
+go:
+  - 1.8
+before_install:
+  - go get github.com/mattn/goveralls
+script:
+  - $HOME/gopath/bin/goveralls -service=travis-ci -ignore=discord/discord.go,main.go,discord/discord_mocks.go,discord/generate.go,proto/generate.go,proto/gateway.pb.go,proto/gateway_mocks.go

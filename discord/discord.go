@@ -7,7 +7,7 @@ import (
 
 // This is a very thin wrapper around the discordgo api for testability purposes
 // and to easily keep track of what endpoints are being consumed
-type Client interface {
+type DiscordClient interface {
 	UpdateMember(guildID, userID string, roles []string) error
 	RemoveMemberRole(guildID, userID, role string) error
 	GetAllMembers(guildID, after string, limit int) ([]*discordgo.Member, error)
@@ -50,7 +50,7 @@ func (cl *client) GetUser(userID string) (*discordgo.User, error) {
 	return cl.session.User(userID)
 }
 
-func NewClient(token string) (Client, error) {
+func NewClient(token string) (DiscordClient, error) {
 	session, err := discordgo.New("Bot " + token)
 	var newClient client
 	if err != nil {
