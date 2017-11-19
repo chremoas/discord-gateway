@@ -81,3 +81,35 @@ func (_m *MockDiscordClient) GetUser(userID string) (*discordgo.User, error) {
 func (_mr *_MockDiscordClientRecorder) GetUser(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetUser", arg0)
 }
+
+func (_m *MockDiscordClient) CreateRole(guildId string) (*discordgo.Role, error) {
+	ret := _m.ctrl.Call(_m, "CreateRole", guildId)
+	ret0, _ := ret[0].(*discordgo.Role)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDiscordClientRecorder) CreateRole(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateRole", arg0)
+}
+
+func (_m *MockDiscordClient) EditRole(guildId string, roleId string, name string, color int, perm int, hoist bool, mention bool) (*discordgo.Role, error) {
+	ret := _m.ctrl.Call(_m, "EditRole", guildId, roleId, name, color, perm, hoist, mention)
+	ret0, _ := ret[0].(*discordgo.Role)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDiscordClientRecorder) EditRole(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "EditRole", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+}
+
+func (_m *MockDiscordClient) DeleteRole(guildId string, roleId string) error {
+	ret := _m.ctrl.Call(_m, "DeleteRole", guildId, roleId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockDiscordClientRecorder) DeleteRole(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteRole", arg0, arg1)
+}

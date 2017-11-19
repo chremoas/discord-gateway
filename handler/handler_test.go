@@ -1055,9 +1055,546 @@ func TestDiscordClient_UpdateMember_Error(t *testing.T) {
 }
 
 func TestDiscordClient_CreateRole(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := discord.NewMockDiscordClient(mockCtrl)
+	mockRoleMap := discord.NewRoleMap("G123456", mockClient)
+	SetDefaultFailureMode(FailureHalts)
+	defer mockCtrl.Finish()
+
+	//<editor-fold desc="Mock Expectations an results>
+	mockClient.EXPECT().GetAllRoles("G123456").Times(1).Return(
+		[]*discordgo.Role{
+			{
+				ID:          "R123456",
+				Name:        "role 1",
+				Position:    0,
+				Permissions: 1,
+				Mentionable: false,
+				Managed:     false,
+				Hoist:       false,
+				Color:       1,
+			},
+			{
+				ID:          "R234567",
+				Name:        "role 2",
+				Position:    1,
+				Permissions: 2,
+				Mentionable: true,
+				Managed:     true,
+				Hoist:       true,
+				Color:       2,
+			},
+			{
+				ID:          "R345678",
+				Name:        "role 3",
+				Position:    2,
+				Permissions: 3,
+				Mentionable: false,
+				Managed:     true,
+				Hoist:       false,
+				Color:       3,
+			},
+			{
+				ID:          "R456789",
+				Name:        "role 4",
+				Position:    3,
+				Permissions: 4,
+				Mentionable: true,
+				Managed:     false,
+				Hoist:       true,
+				Color:       4,
+			},
+		}, nil,
+	)
+	mockClient.EXPECT().CreateRole("G123456").Times(1).Return(
+		&discordgo.Role{
+			ID:          "R567890",
+			Name:        "default role name",
+			Managed:     false,
+			Position:    5,
+			Permissions: 5,
+			Color:       5,
+			Hoist:       false,
+			Mentionable: false,
+		}, nil,
+	)
+	mockClient.EXPECT().EditRole("G123456", "R567890", "role 5", 1, 1, true, true).Times(1).Return(
+		&discordgo.Role{
+			ID:          "R567890",
+			Name:        "role 5",
+			Managed:     false,
+			Position:    1,
+			Permissions: 1,
+			Color:       1,
+			Hoist:       true,
+			Mentionable: true,
+		}, nil,
+	)
+	//</editor-fold>
+
+	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
+
+	Convey("Given a client create a role with the given attributes", t, func() {
+		response := &proto.CreateRolesResponse{}
+		err := client.CreateRole(context.Background(), &proto.CreateRoleRequest{
+			Mentionable: true,
+			Hoist:       true,
+			Color:       1,
+			Permissions: 1,
+			Name:        "role 5",
+			GuildId:     "G123456",
+		}, response)
+
+		So(err, ShouldBeNil)
+		So(response, ShouldNotBeNil)
+		So(response.RoleId, ShouldEqual, "R567890")
+	})
+}
+
+func TestDiscordClient_CreateRole_ResponseValidationFailure(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := discord.NewMockDiscordClient(mockCtrl)
+	mockRoleMap := discord.NewRoleMap("G123456", mockClient)
+	SetDefaultFailureMode(FailureHalts)
+	defer mockCtrl.Finish()
+
+	//<editor-fold desc="Mock Expectations an results>
+	mockClient.EXPECT().GetAllRoles("G123456").Times(1).Return(
+		[]*discordgo.Role{
+			{
+				ID:          "R123456",
+				Name:        "role 1",
+				Position:    0,
+				Permissions: 1,
+				Mentionable: false,
+				Managed:     false,
+				Hoist:       false,
+				Color:       1,
+			},
+			{
+				ID:          "R234567",
+				Name:        "role 2",
+				Position:    1,
+				Permissions: 2,
+				Mentionable: true,
+				Managed:     true,
+				Hoist:       true,
+				Color:       2,
+			},
+			{
+				ID:          "R345678",
+				Name:        "role 3",
+				Position:    2,
+				Permissions: 3,
+				Mentionable: false,
+				Managed:     true,
+				Hoist:       false,
+				Color:       3,
+			},
+			{
+				ID:          "R456789",
+				Name:        "role 4",
+				Position:    3,
+				Permissions: 4,
+				Mentionable: true,
+				Managed:     false,
+				Hoist:       true,
+				Color:       4,
+			},
+		}, nil,
+	)
+	mockClient.EXPECT().CreateRole("G123456").Times(1).Return(
+		&discordgo.Role{
+			ID:          "R567890",
+			Name:        "default role name",
+			Managed:     false,
+			Position:    5,
+			Permissions: 5,
+			Color:       5,
+			Hoist:       false,
+			Mentionable: false,
+		}, nil,
+	)
+	mockClient.EXPECT().EditRole("G123456", "R567890", "role 5", 1, 1, true, true).Times(1).Return(
+		&discordgo.Role{
+			ID:          "R567890",
+			Name:        "default role name",
+			Managed:     false,
+			Position:    5,
+			Permissions: 5,
+			Color:       5,
+			Hoist:       false,
+			Mentionable: false,
+		}, nil,
+	)
+	mockClient.EXPECT().DeleteRole("G123456", "R567890").Times(1).Return(nil)
+	//</editor-fold>
+
+	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
+
+	Convey("Given a client fail role creation due to invalid response from discord", t, func() {
+		response := &proto.CreateRolesResponse{}
+		err := client.CreateRole(context.Background(), &proto.CreateRoleRequest{
+			Mentionable: true,
+			Hoist:       true,
+			Color:       1,
+			Permissions: 1,
+			Name:        "role 5",
+			GuildId:     "G123456",
+		}, response)
+
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "role create failed due to invalid response from discord")
+	})
+}
+
+func TestDiscordClient_CreateRole_ResponseValidationFailure_ErrorOnDelete(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := discord.NewMockDiscordClient(mockCtrl)
+	mockRoleMap := discord.NewRoleMap("G123456", mockClient)
+	SetDefaultFailureMode(FailureHalts)
+	defer mockCtrl.Finish()
+
+	//<editor-fold desc="Mock Expectations an results>
+	mockClient.EXPECT().GetAllRoles("G123456").Times(1).Return(
+		[]*discordgo.Role{
+			{
+				ID:          "R123456",
+				Name:        "role 1",
+				Position:    0,
+				Permissions: 1,
+				Mentionable: false,
+				Managed:     false,
+				Hoist:       false,
+				Color:       1,
+			},
+			{
+				ID:          "R234567",
+				Name:        "role 2",
+				Position:    1,
+				Permissions: 2,
+				Mentionable: true,
+				Managed:     true,
+				Hoist:       true,
+				Color:       2,
+			},
+			{
+				ID:          "R345678",
+				Name:        "role 3",
+				Position:    2,
+				Permissions: 3,
+				Mentionable: false,
+				Managed:     true,
+				Hoist:       false,
+				Color:       3,
+			},
+			{
+				ID:          "R456789",
+				Name:        "role 4",
+				Position:    3,
+				Permissions: 4,
+				Mentionable: true,
+				Managed:     false,
+				Hoist:       true,
+				Color:       4,
+			},
+		}, nil,
+	)
+	mockClient.EXPECT().CreateRole("G123456").Times(1).Return(
+		&discordgo.Role{
+			ID:          "R567890",
+			Name:        "default role name",
+			Managed:     false,
+			Position:    5,
+			Permissions: 5,
+			Color:       5,
+			Hoist:       false,
+			Mentionable: false,
+		}, nil,
+	)
+	mockClient.EXPECT().EditRole("G123456", "R567890", "role 5", 1, 1, true, true).Times(1).Return(
+		&discordgo.Role{
+			ID:          "R567890",
+			Name:        "default role name",
+			Managed:     false,
+			Position:    5,
+			Permissions: 5,
+			Color:       5,
+			Hoist:       false,
+			Mentionable: false,
+		}, nil,
+	)
+	mockClient.EXPECT().DeleteRole("G123456", "R567890").Times(1).Return(errors.New("dave I failed to delete after you validated"))
+	//</editor-fold>
+
+	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
+
+	Convey("Given a client fail role delete after invalid check", t, func() {
+		response := &proto.CreateRolesResponse{}
+		err := client.CreateRole(context.Background(), &proto.CreateRoleRequest{
+			Mentionable: true,
+			Hoist:       true,
+			Color:       1,
+			Permissions: 1,
+			Name:        "role 5",
+			GuildId:     "G123456",
+		}, response)
+
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "attempted to delete role due to invalid response but received error (dave I failed to delete after you validated)")
+	})
+}
+
+func TestDiscorClient_CreateRole_ErrorOnCreate(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := discord.NewMockDiscordClient(mockCtrl)
+	mockRoleMap := discord.NewRoleMap("G123456", mockClient)
+	SetDefaultFailureMode(FailureHalts)
+	defer mockCtrl.Finish()
+
+	//<editor-fold desc="Mock Expectations an results>
+	mockClient.EXPECT().GetAllRoles("G123456").Times(1).Return(
+		[]*discordgo.Role{
+			{
+				ID:          "R123456",
+				Name:        "role 1",
+				Position:    0,
+				Permissions: 1,
+				Mentionable: false,
+				Managed:     false,
+				Hoist:       false,
+				Color:       1,
+			},
+			{
+				ID:          "R234567",
+				Name:        "role 2",
+				Position:    1,
+				Permissions: 2,
+				Mentionable: true,
+				Managed:     true,
+				Hoist:       true,
+				Color:       2,
+			},
+			{
+				ID:          "R345678",
+				Name:        "role 3",
+				Position:    2,
+				Permissions: 3,
+				Mentionable: false,
+				Managed:     true,
+				Hoist:       false,
+				Color:       3,
+			},
+			{
+				ID:          "R456789",
+				Name:        "role 4",
+				Position:    3,
+				Permissions: 4,
+				Mentionable: true,
+				Managed:     false,
+				Hoist:       true,
+				Color:       4,
+			},
+		}, nil,
+	)
+	mockClient.EXPECT().CreateRole("G123456").Times(1).Return(nil, errors.New("dave I failed you on create"))
+	//</editor-fold>
+
+	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
+
+	Convey("Given a client fail to create a role", t, func() {
+		response := &proto.CreateRolesResponse{}
+		err := client.CreateRole(context.Background(), &proto.CreateRoleRequest{
+			Mentionable: true,
+			Hoist:       true,
+			Color:       1,
+			Permissions: 1,
+			Name:        "role 5",
+			GuildId:     "G123456",
+		}, response)
+
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "dave I failed you on create")
+	})
+}
+
+func TestDiscorClient_CreateRole_ErrorOnEdit(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := discord.NewMockDiscordClient(mockCtrl)
+	mockRoleMap := discord.NewRoleMap("G123456", mockClient)
+	SetDefaultFailureMode(FailureHalts)
+	defer mockCtrl.Finish()
+
+	//<editor-fold desc="Mock Expectations an results>
+	mockClient.EXPECT().GetAllRoles("G123456").Times(1).Return(
+		[]*discordgo.Role{
+			{
+				ID:          "R123456",
+				Name:        "role 1",
+				Position:    0,
+				Permissions: 1,
+				Mentionable: false,
+				Managed:     false,
+				Hoist:       false,
+				Color:       1,
+			},
+			{
+				ID:          "R234567",
+				Name:        "role 2",
+				Position:    1,
+				Permissions: 2,
+				Mentionable: true,
+				Managed:     true,
+				Hoist:       true,
+				Color:       2,
+			},
+			{
+				ID:          "R345678",
+				Name:        "role 3",
+				Position:    2,
+				Permissions: 3,
+				Mentionable: false,
+				Managed:     true,
+				Hoist:       false,
+				Color:       3,
+			},
+			{
+				ID:          "R456789",
+				Name:        "role 4",
+				Position:    3,
+				Permissions: 4,
+				Mentionable: true,
+				Managed:     false,
+				Hoist:       true,
+				Color:       4,
+			},
+		}, nil,
+	)
+	mockClient.EXPECT().CreateRole("G123456").Times(1).Return(
+		&discordgo.Role{
+			ID:          "R567890",
+			Name:        "default role name",
+			Managed:     false,
+			Position:    5,
+			Permissions: 5,
+			Color:       5,
+			Hoist:       false,
+			Mentionable: false,
+		}, nil,
+	)
+	mockClient.EXPECT().EditRole("G123456", "R567890", "role 5", 1, 1, true, true).Times(1).Return(nil, errors.New("dave I failed you on edit"))
+	mockClient.EXPECT().DeleteRole("G123456", "R567890").Times(1).Return(nil)
+	//</editor-fold>
+
+	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
+
+	Convey("Given a client fail to edit a role", t, func() {
+		response := &proto.CreateRolesResponse{}
+		err := client.CreateRole(context.Background(), &proto.CreateRoleRequest{
+			Mentionable: true,
+			Hoist:       true,
+			Color:       1,
+			Permissions: 1,
+			Name:        "role 5",
+			GuildId:     "G123456",
+		}, response)
+
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "dave I failed you on edit")
+	})
+}
+
+func TestDiscorClient_CreateRole_ErrorOnEditAndDelete(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := discord.NewMockDiscordClient(mockCtrl)
+	mockRoleMap := discord.NewRoleMap("G123456", mockClient)
+	SetDefaultFailureMode(FailureHalts)
+	defer mockCtrl.Finish()
+
+	//<editor-fold desc="Mock Expectations an results>
+	mockClient.EXPECT().GetAllRoles("G123456").Times(1).Return(
+		[]*discordgo.Role{
+			{
+				ID:          "R123456",
+				Name:        "role 1",
+				Position:    0,
+				Permissions: 1,
+				Mentionable: false,
+				Managed:     false,
+				Hoist:       false,
+				Color:       1,
+			},
+			{
+				ID:          "R234567",
+				Name:        "role 2",
+				Position:    1,
+				Permissions: 2,
+				Mentionable: true,
+				Managed:     true,
+				Hoist:       true,
+				Color:       2,
+			},
+			{
+				ID:          "R345678",
+				Name:        "role 3",
+				Position:    2,
+				Permissions: 3,
+				Mentionable: false,
+				Managed:     true,
+				Hoist:       false,
+				Color:       3,
+			},
+			{
+				ID:          "R456789",
+				Name:        "role 4",
+				Position:    3,
+				Permissions: 4,
+				Mentionable: true,
+				Managed:     false,
+				Hoist:       true,
+				Color:       4,
+			},
+		}, nil,
+	)
+	mockClient.EXPECT().CreateRole("G123456").Times(1).Return(
+		&discordgo.Role{
+			ID:          "R567890",
+			Name:        "default role name",
+			Managed:     false,
+			Position:    5,
+			Permissions: 5,
+			Color:       5,
+			Hoist:       false,
+			Mentionable: false,
+		}, nil,
+	)
+	mockClient.EXPECT().EditRole("G123456", "R567890", "role 5", 1, 1, true, true).Times(1).Return(nil, errors.New("dave I failed you on edit"))
+	mockClient.EXPECT().DeleteRole("G123456", "R567890").Times(1).Return(errors.New("dave I failed you on delete"))
+	//</editor-fold>
+
+	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
+
+	Convey("Given a client fail to edit and delete a role", t, func() {
+		response := &proto.CreateRolesResponse{}
+		err := client.CreateRole(context.Background(), &proto.CreateRoleRequest{
+			Mentionable: true,
+			Hoist:       true,
+			Color:       1,
+			Permissions: 1,
+			Name:        "role 5",
+			GuildId:     "G123456",
+		}, response)
+
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "edit failure (dave I failed you on edit), delete failure (dave I failed you on delete)")
+	})
+}
+
+//TODO: Define and implement these
+func TestDiscordClient_DeleteRole(t *testing.T) {
 
 }
 
-func TestDiscorClient_CreateRole_Error(t *testing.T) {
+func TestDiscordClient_DeleteRole_Error(t *testing.T) {
 
 }

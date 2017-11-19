@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/abaeve/discord-gateway/discord"
 	proto "github.com/abaeve/discord-gateway/proto"
+	"github.com/bwmarrin/discordgo"
 	"golang.org/x/net/context"
 	"sort"
 	"time"
@@ -139,6 +140,33 @@ func (dgh *discordGatewayHandler) GetAllRoles(ctx context.Context, request *prot
 }
 
 func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto.CreateRoleRequest, response *proto.CreateRolesResponse) error {
+	role, err := dgh.client.CreateRole(request.GuildId)
+	if err != nil {
+		return err
+	}
+
+	editedRole, err := dgh.client.EditRole(request.GuildId, role.ID, request.Name, int(request.Color), int(request.Permissions), request.Hoist, request.Mentionable)
+	if err != nil {
+		deleteErr := dgh.client.DeleteRole(request.GuildId, role.ID)
+		if deleteErr != nil {
+			return errors.New(fmt.Sprintf("edit failure (%s), delete failure (%s)", err.Error(), deleteErr.Error()))
+		}
+
+		return err
+	}
+
+	//Now validate the edited role
+	if !validateRole(request, editedRole) {
+		err = dgh.client.DeleteRole(request.GuildId, role.ID)
+		if err != nil {
+			return errors.New(fmt.Sprintf("attempted to delete role due to invalid response but received error (%s)", err.Error()))
+		}
+
+		return errors.New("role create failed due to invalid response from discord")
+	}
+
+	response.RoleId = editedRole.ID
+
 	return nil
 }
 
@@ -170,6 +198,18 @@ func (dgh *discordGatewayHandler) updateRoles() error {
 	}
 
 	return nil
+}
+
+func validateRole(request *proto.CreateRoleRequest, role *discordgo.Role) bool {
+	valid := true
+
+	valid = valid && role.Permissions == int(request.Permissions)
+	valid = valid && role.Hoist == request.Hoist
+	valid = valid && role.Mentionable == request.Mentionable
+	valid = valid && role.Color == int(request.Color)
+	valid = valid && role.Name == request.Name
+
+	return valid
 }
 
 func NewDiscordGatewayHandler(client discord.DiscordClient, roleMap discord.RoleMap) (proto.DiscordGatewayHandler, error) {
