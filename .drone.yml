@@ -28,9 +28,9 @@ pipeline:
         target: PLUGIN_USERNAME
       - source: registry_pass
         target: PLUGIN_PASSWORD
-    tags: [ latest, 1.0.0 ]
+    tags: [ latest, 1.0.1 ]
     when:
-      branch: [ tag ]
+      event: [ tag ]
 
   publish-snapshot:
     image: plugins/docker:linux-arm
@@ -41,7 +41,7 @@ pipeline:
         target: PLUGIN_USERNAME
       - source: registry_pass
         target: PLUGIN_PASSWORD
-    tags: [ latest, 1.0.0-SNAPSHOT ]
+    tags: [ latest, 1.0.1-SNAPSHOT ]
     when:
       branch: [ release/* ]
 
@@ -55,7 +55,7 @@ pipeline:
     port: 22
     script:
       - docker login -u ${registry_user} -p ${registry_pass} registry.maurer-it.net
-      - docker service update --with-registry-auth --image=registry.maurer-it.net/discord-gateway:1.0.0-SNAPSHOT discord-gateway-dev
+      - docker service update --with-registry-auth --image=registry.maurer-it.net/discord-gateway:1.0.1-SNAPSHOT discord-gateway-dev
     when:
       branch: [ release/* ]
 
@@ -69,7 +69,7 @@ pipeline:
     port: 22
     script:
       - docker login -u ${registry_user} -p ${registry_pass} registry.maurer-it.net
-      - docker service create --name discord-gateway --network chremoas --with-registry-auth registry.maurer-it.net/discord-gateway:1.0.0
+      - docker service create --name discord-gateway --network chremoas --with-registry-auth registry.maurer-it.net/discord-gateway:1.0.1
     when:
       event: deployment
       environment: production

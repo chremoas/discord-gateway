@@ -22,7 +22,7 @@ func main() {
 }
 
 func initialize(config *config.Configuration) error {
-	client, err := discord.NewClient(config.Chat.Discord.Token)
+	client, err := discord.NewClient(config.Bot.BotToken)
 	if err != nil {
 		return err
 	}
