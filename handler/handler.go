@@ -66,12 +66,20 @@ func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *pr
 		return err
 	}
 
+	me, err := dgh.client.GetUser("@me")
+	if err != nil {
+		return err
+	}
+
 	members, err := dgh.client.GetAllMembers(request.GuildId, request.After, int(request.NumberPerPage))
 	if err != nil {
 		return err
 	}
 
 	for _, member := range members {
+		if member.User.ID == me.ID {
+			continue
+		}
 		protoMember := &proto.Member{
 			GuildId: member.GuildID,
 			User: &proto.User{
