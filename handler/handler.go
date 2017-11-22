@@ -28,18 +28,14 @@ func (a ByPosition) Less(i, j int) bool { return a[i].Position < a[j].Position }
 func (dgh *discordGatewayHandler) UpdateMember(ctx context.Context, request *proto.UpdateMemberRequest, response *proto.UpdateMemberResponse) error {
 	var err error
 
-	roles := make([]string, len(request.RoleIds))
-
-	for idx, roleId := range request.RoleIds {
-		roles[idx] = dgh.roleMap.GetRoleName(roleId)
-	}
+	roleIds := request.RoleIds
 
 	switch request.Operation {
 	case proto.MemberUpdateOperation_REMOVE_ROLES:
 		var removeErr error
 
-		for _, roleName := range roles {
-			currentErr := dgh.client.RemoveMemberRole(request.GuildId, request.UserId, roleName)
+		for _, roleId := range roleIds {
+			currentErr := dgh.client.RemoveMemberRole(request.GuildId, request.UserId, roleId)
 			if currentErr != nil {
 				removeErr = currentErr
 			}
@@ -49,7 +45,7 @@ func (dgh *discordGatewayHandler) UpdateMember(ctx context.Context, request *pro
 
 		break
 	case proto.MemberUpdateOperation_ADD_OR_UPDATE_ROLES:
-		err = dgh.client.UpdateMember(request.GuildId, request.UserId, roles)
+		err = dgh.client.UpdateMember(request.GuildId, request.UserId, roleIds)
 		break
 	}
 

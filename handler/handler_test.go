@@ -1209,8 +1209,8 @@ func TestDiscordClient_RemoveMemberRoles(t *testing.T) {
 			}, nil,
 		),
 	)
-	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "role 1").Times(1).Return(nil)
-	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "role 2").Times(1).Return(nil)
+	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "R123456").Times(1).Return(nil)
+	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "R234567").Times(1).Return(nil)
 	//</editor-fold>
 
 	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
@@ -1286,8 +1286,8 @@ func TestDiscordClient_RemoveMemberRole_ErrorFirstRemove(t *testing.T) {
 			}, nil,
 		),
 	)
-	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "role 1").Times(1).Return(errors.New("dave I failed you on the first try"))
-	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "role 2").Times(1).Return(nil)
+	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "R123456").Times(1).Return(errors.New("dave I failed you on the first try"))
+	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "R234567").Times(1).Return(nil)
 	//</editor-fold>
 
 	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
@@ -1363,8 +1363,8 @@ func TestDiscordClient_RemoveMemberRole_ErrorSecondRemove(t *testing.T) {
 			}, nil,
 		),
 	)
-	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "role 1").Times(1).Return(nil)
-	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "role 2").Times(1).Return(errors.New("dave I failed you on the second try"))
+	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "R123456").Times(1).Return(nil)
+	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "R234567").Times(1).Return(errors.New("dave I failed you on the second try"))
 	//</editor-fold>
 
 	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
@@ -1438,7 +1438,7 @@ func TestDiscordClient_UpdateMember(t *testing.T) {
 			},
 		}, nil,
 	)
-	mockClient.EXPECT().UpdateMember("G123456", "U123456", []string{"role 1", "role 2"}).Times(1).Return(nil)
+	mockClient.EXPECT().UpdateMember("G123456", "U123456", []string{"R123456", "R234567"}).Times(1).Return(nil)
 	//</editor-fold>
 
 	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
@@ -1512,7 +1512,7 @@ func TestDiscordClient_UpdateMember_Error(t *testing.T) {
 			},
 		}, nil,
 	)
-	mockClient.EXPECT().UpdateMember("G123456", "U123456", []string{"role 1", "role 2"}).Times(1).Return(errors.New("dave I failed you"))
+	mockClient.EXPECT().UpdateMember("G123456", "U123456", []string{"R123456", "R234567"}).Times(1).Return(errors.New("dave I failed you"))
 	//</editor-fold>
 
 	client, _ := NewDiscordGatewayHandler(mockClient, mockRoleMap)
