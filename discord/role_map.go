@@ -11,6 +11,7 @@ type RoleMap interface {
 	GetRoleId(roleName string) string
 	GetRoleName(roleId string) string
 	GetRoleByName(roleName string) *discordgo.Role
+	GetRoleById(roleId string) *discordgo.Role
 }
 
 type roleMapImpl struct {
@@ -75,6 +76,10 @@ func (rm *roleMapImpl) GetRoleName(roleId string) string {
 
 func (rm *roleMapImpl) GetRoleByName(roleName string) *discordgo.Role {
 	return rm.rolesByName[roleName]
+}
+
+func (rm *roleMapImpl) GetRoleById(roleId string) *discordgo.Role {
+	return rm.rolesById[roleId]
 }
 
 func NewRoleMap(guildID string, client DiscordClient) RoleMap {
