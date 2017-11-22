@@ -2,8 +2,8 @@ package handler
 
 import (
 	"errors"
-	"github.com/abaeve/discord-gateway/discord"
-	proto "github.com/abaeve/discord-gateway/proto"
+	"github.com/chremoas/discord-gateway/discord"
+	proto "github.com/chremoas/discord-gateway/proto"
 	"github.com/bwmarrin/discordgo"
 	"github.com/golang/mock/gomock"
 	. "github.com/smartystreets/goconvey/convey"

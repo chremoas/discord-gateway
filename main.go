@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/abaeve/discord-gateway/discord"
-	"github.com/abaeve/discord-gateway/handler"
-	proto "github.com/abaeve/discord-gateway/proto"
-	"github.com/abaeve/services-common/config"
+	"github.com/chremoas/discord-gateway/discord"
+	"github.com/chremoas/discord-gateway/handler"
+	proto "github.com/chremoas/discord-gateway/proto"
+	"github.com/chremoas/services-common/config"
 	"github.com/micro/go-micro"
 )
 

@@ -3,8 +3,8 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"github.com/abaeve/discord-gateway/discord"
-	proto "github.com/abaeve/discord-gateway/proto"
+	"github.com/chremoas/discord-gateway/discord"
+	proto "github.com/chremoas/discord-gateway/proto"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/net/context"
 	"sort"
