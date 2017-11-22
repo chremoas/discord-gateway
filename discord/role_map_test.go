@@ -373,6 +373,70 @@ func TestRoleMapImpl_GetRoleByName_NoRoleFound(t *testing.T) {
 
 }
 
+func TestRoleMapImpl_GetRoleById(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := NewMockDiscordClient(mockCtrl)
+	defer mockCtrl.Finish()
+
+	roleMap := &roleMapImpl{guildID: "1234567890", client: mockClient}
+
+	mockClient.EXPECT().GetAllRoles("1234567890").Times(1).Return([]*discordgo.Role{
+		{
+			ID:          "0123456789",
+			Name:        "TEST ROLE 1",
+			Color:       1,
+			Hoist:       false,
+			Managed:     false,
+			Mentionable: false,
+			Permissions: 1,
+			Position:    1,
+		},
+		{
+			ID:          "0234567890",
+			Name:        "TEST ROLE 2",
+			Color:       2,
+			Hoist:       true,
+			Managed:     true,
+			Mentionable: true,
+			Permissions: 2,
+			Position:    2,
+		},
+		{
+			ID:          "0345678901",
+			Name:        "TEST ROLE 3",
+			Color:       3,
+			Hoist:       false,
+			Managed:     true,
+			Mentionable: false,
+			Permissions: 3,
+			Position:    3,
+		},
+	}, nil)
+
+	err := roleMap.UpdateRoles()
+
+	Convey("Given a populated RoleMap", t, func() {
+		Convey("There is no error", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Searching for a role by name finds the right role", func() {
+			role := roleMap.GetRoleById("0123456789")
+
+			So(role, ShouldResemble, &discordgo.Role{
+				ID:          "0123456789",
+				Name:        "TEST ROLE 1",
+				Color:       1,
+				Hoist:       false,
+				Managed:     false,
+				Mentionable: false,
+				Permissions: 1,
+				Position:    1,
+			})
+		})
+	})
+}
+
 func TestNewRoleMap(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockClient := NewMockDiscordClient(mockCtrl)

@@ -99,8 +99,8 @@ func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *pr
 			Nick:     member.Nick,
 		}
 
-		for _, roleName := range member.Roles {
-			role := dgh.roleMap.GetRoleByName(roleName)
+		for _, roleId := range member.Roles {
+			role := dgh.roleMap.GetRoleById(roleId)
 
 			protoMember.Roles = append(protoMember.Roles, &proto.Role{
 				Id:          role.ID,
