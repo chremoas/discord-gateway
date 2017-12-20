@@ -11,9 +11,10 @@ import (
 
 var Version = "1.0.0"
 var service micro.Service
+var name = "discord"
 
 func main() {
-	service = config.NewService(Version, "discord-gateway", initialize)
+	service = config.NewService(Version, "gateway", name, initialize)
 
 	err := service.Run()
 	if err != nil {
