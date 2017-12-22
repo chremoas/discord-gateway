@@ -12,6 +12,8 @@ import (
 )
 
 type discordGatewayHandler struct {
+	discordServerId string
+
 	client  discord.DiscordClient
 	roleMap discord.RoleMap
 
@@ -35,7 +37,7 @@ func (dgh *discordGatewayHandler) UpdateMember(ctx context.Context, request *pro
 		var removeErr error
 
 		for _, roleId := range roleIds {
-			currentErr := dgh.client.RemoveMemberRole(request.GuildId, request.UserId, roleId)
+			currentErr := dgh.client.RemoveMemberRole(dgh.discordServerId, request.UserId, roleId)
 			if currentErr != nil {
 				removeErr = currentErr
 			}
@@ -45,7 +47,7 @@ func (dgh *discordGatewayHandler) UpdateMember(ctx context.Context, request *pro
 
 		break
 	case proto.MemberUpdateOperation_ADD_OR_UPDATE_ROLES:
-		err = dgh.client.UpdateMember(request.GuildId, request.UserId, roleIds)
+		err = dgh.client.UpdateMember(dgh.discordServerId, request.UserId, roleIds)
 		break
 	}
 
@@ -67,7 +69,7 @@ func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *pr
 		return err
 	}
 
-	members, err := dgh.client.GetAllMembers(request.GuildId, request.After, int(request.NumberPerPage))
+	members, err := dgh.client.GetAllMembers(dgh.discordServerId, request.After, int(request.NumberPerPage))
 	if err != nil {
 		return err
 	}
@@ -144,14 +146,14 @@ func (dgh *discordGatewayHandler) GetAllRoles(ctx context.Context, request *prot
 }
 
 func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto.CreateRoleRequest, response *proto.CreateRolesResponse) error {
-	role, err := dgh.client.CreateRole(request.GuildId)
+	role, err := dgh.client.CreateRole(dgh.discordServerId)
 	if err != nil {
 		return err
 	}
 
-	editedRole, err := dgh.client.EditRole(request.GuildId, role.ID, request.Name, int(request.Color), int(request.Permissions), request.Hoist, request.Mentionable)
+	editedRole, err := dgh.client.EditRole(dgh.discordServerId, role.ID, request.Name, int(request.Color), int(request.Permissions), request.Hoist, request.Mentionable)
 	if err != nil {
-		deleteErr := dgh.client.DeleteRole(request.GuildId, role.ID)
+		deleteErr := dgh.client.DeleteRole(dgh.discordServerId, role.ID)
 		if deleteErr != nil {
 			return errors.New(fmt.Sprintf("edit failure (%s), delete failure (%s)", err.Error(), deleteErr.Error()))
 		}
@@ -161,7 +163,7 @@ func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto
 
 	//Now validate the edited role
 	if !validateRole(request, editedRole) {
-		err = dgh.client.DeleteRole(request.GuildId, role.ID)
+		err = dgh.client.DeleteRole(dgh.discordServerId, role.ID)
 		if err != nil {
 			return errors.New(fmt.Sprintf("attempted to delete role due to invalid response but received error (%s)", err.Error()))
 		}
@@ -216,10 +218,10 @@ func validateRole(request *proto.CreateRoleRequest, role *discordgo.Role) bool {
 	return valid
 }
 
-func NewDiscordGatewayHandler(client discord.DiscordClient, roleMap discord.RoleMap) (proto.DiscordGatewayHandler, error) {
+func NewDiscordGatewayHandler(discordServerId string, client discord.DiscordClient, roleMap discord.RoleMap) (proto.DiscordGatewayHandler, error) {
 	err := roleMap.UpdateRoles()
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("error calling roleMap.UpdateRoles (%s)", err.Error()))
 	}
-	return &discordGatewayHandler{client: client, roleMap: roleMap, lastRoleCall: time.Now()}, nil
+	return &discordGatewayHandler{discordServerId: discordServerId, client: client, roleMap: roleMap, lastRoleCall: time.Now()}, nil
 }
