@@ -94,6 +94,22 @@ func (_mr *_MockDiscordGatewayClientRecorder) CreateRole(arg0, arg1 interface{},
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateRole", _s...)
 }
 
+func (_m *MockDiscordGatewayClient) DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...client.CallOption) (*DeleteRoleResponse, error) {
+	_s := []interface{}{ctx, in}
+	for _, _x := range opts {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "DeleteRole", _s...)
+	ret0, _ := ret[0].(*DeleteRoleResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDiscordGatewayClientRecorder) DeleteRole(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteRole", _s...)
+}
+
 func (_m *MockDiscordGatewayClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...client.CallOption) (*GetUserResponse, error) {
 	_s := []interface{}{ctx, in}
 	for _, _x := range opts {
@@ -169,6 +185,16 @@ func (_m *MockDiscordGatewayHandler) CreateRole(_param0 context.Context, _param1
 
 func (_mr *_MockDiscordGatewayHandlerRecorder) CreateRole(arg0, arg1, arg2 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateRole", arg0, arg1, arg2)
+}
+
+func (_m *MockDiscordGatewayHandler) DeleteRole(_param0 context.Context, _param1 *DeleteRoleRequest, _param2 *DeleteRoleResponse) error {
+	ret := _m.ctrl.Call(_m, "DeleteRole", _param0, _param1, _param2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockDiscordGatewayHandlerRecorder) DeleteRole(arg0, arg1, arg2 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteRole", arg0, arg1, arg2)
 }
 
 func (_m *MockDiscordGatewayHandler) GetUser(_param0 context.Context, _param1 *GetUserRequest, _param2 *GetUserResponse) error {

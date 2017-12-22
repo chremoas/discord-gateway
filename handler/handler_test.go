@@ -2061,9 +2061,131 @@ func TestDiscorClient_CreateRole_ErrorOnEditAndDelete(t *testing.T) {
 
 //TODO: Define and implement these
 func TestDiscordClient_DeleteRole(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := discord.NewMockDiscordClient(mockCtrl)
+	mockRoleMap := discord.NewRoleMap("G123456", mockClient)
+	SetDefaultFailureMode(FailureHalts)
+	defer mockCtrl.Finish()
 
+	mockClient.EXPECT().DeleteRole("G123456", "R123456").Times(1).Return(nil)
+	mockClient.EXPECT().GetAllRoles("G123456").Times(1).Return(
+		[]*discordgo.Role{
+			{
+				ID:          "R123456",
+				Name:        "role 1",
+				Position:    0,
+				Permissions: 1,
+				Mentionable: false,
+				Managed:     false,
+				Hoist:       false,
+				Color:       1,
+			},
+			{
+				ID:          "R234567",
+				Name:        "role 2",
+				Position:    1,
+				Permissions: 2,
+				Mentionable: true,
+				Managed:     true,
+				Hoist:       true,
+				Color:       2,
+			},
+			{
+				ID:          "R345678",
+				Name:        "role 3",
+				Position:    2,
+				Permissions: 3,
+				Mentionable: false,
+				Managed:     true,
+				Hoist:       false,
+				Color:       3,
+			},
+			{
+				ID:          "R456789",
+				Name:        "role 4",
+				Position:    3,
+				Permissions: 4,
+				Mentionable: true,
+				Managed:     false,
+				Hoist:       true,
+				Color:       4,
+			},
+		}, nil,
+	)
+
+	handler, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+
+	Convey("Given a client delete a role", t, func() {
+		response := &proto.DeleteRoleResponse{}
+		err := handler.DeleteRole(context.Background(), &proto.DeleteRoleRequest{Name: "role 1"}, response)
+
+		So(err, ShouldBeNil)
+
+		So(response.Success, ShouldEqual, true)
+	})
 }
 
 func TestDiscordClient_DeleteRole_Error(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := discord.NewMockDiscordClient(mockCtrl)
+	mockRoleMap := discord.NewRoleMap("G123456", mockClient)
+	SetDefaultFailureMode(FailureHalts)
+	defer mockCtrl.Finish()
 
+	mockClient.EXPECT().DeleteRole("G123456", "R123456").Times(1).Return(errors.New("dave I failed you on delete"))
+	mockClient.EXPECT().GetAllRoles("G123456").Times(1).Return(
+		[]*discordgo.Role{
+			{
+				ID:          "R123456",
+				Name:        "role 1",
+				Position:    0,
+				Permissions: 1,
+				Mentionable: false,
+				Managed:     false,
+				Hoist:       false,
+				Color:       1,
+			},
+			{
+				ID:          "R234567",
+				Name:        "role 2",
+				Position:    1,
+				Permissions: 2,
+				Mentionable: true,
+				Managed:     true,
+				Hoist:       true,
+				Color:       2,
+			},
+			{
+				ID:          "R345678",
+				Name:        "role 3",
+				Position:    2,
+				Permissions: 3,
+				Mentionable: false,
+				Managed:     true,
+				Hoist:       false,
+				Color:       3,
+			},
+			{
+				ID:          "R456789",
+				Name:        "role 4",
+				Position:    3,
+				Permissions: 4,
+				Mentionable: true,
+				Managed:     false,
+				Hoist:       true,
+				Color:       4,
+			},
+		}, nil,
+	)
+
+	handler, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+
+	Convey("Given a client delete a role", t, func() {
+		response := &proto.DeleteRoleResponse{}
+		err := handler.DeleteRole(context.Background(), &proto.DeleteRoleRequest{Name: "role 1"}, response)
+
+		So(err, ShouldNotBeNil)
+
+		So(response.Success, ShouldEqual, false)
+	})
 }

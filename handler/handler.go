@@ -176,6 +176,19 @@ func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto
 	return nil
 }
 
+func (dgh *discordGatewayHandler) DeleteRole(ctx context.Context, request *proto.DeleteRoleRequest, response *proto.DeleteRoleResponse) error {
+	role := dgh.roleMap.GetRoleByName(request.Name)
+
+	err := dgh.client.DeleteRole(dgh.discordServerId, role.ID)
+	if err != nil {
+		return err
+	}
+
+	response.Success = true
+
+	return nil
+}
+
 func (dgh *discordGatewayHandler) GetUser(ctx context.Context, request *proto.GetUserRequest, response *proto.GetUserResponse) error {
 	user, err := dgh.client.GetUser(request.UserId)
 	if err != nil {
