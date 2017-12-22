@@ -21,7 +21,6 @@ service DiscordGateway {
 }
 
 message UpdateMemberRequest {
-    string GuildId = 1;
     MemberUpdateOperation Operation = 2;
     string UserId = 3;
     repeated string RoleIds = 4;
@@ -33,13 +32,11 @@ message UpdateMemberResponse {
 }
 
 message GetAllMembersRequest {
-    string GuildId = 1;
     string After = 2;
     int32 NumberPerPage = 3;
 }
 
 message GuildObjectRequest {
-    string GuildId = 1;
 }
 
 message GetMembersResponse {
@@ -51,7 +48,6 @@ message GetRoleResponse {
 }
 
 message CreateRoleRequest {
-    string GuildId = 1;
     string Name = 2;
     int32 Color = 3;
     bool Hoist = 4;
