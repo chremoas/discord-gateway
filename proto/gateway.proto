@@ -16,6 +16,8 @@ service DiscordGateway {
     };
     rpc CreateRole (CreateRoleRequest) returns (CreateRolesResponse) {
     };
+    rpc DeleteRole (DeleteRoleRequest) returns (DeleteRoleResponse) {
+    };
     rpc GetUser (GetUserRequest) returns (GetUserResponse) {
     };
 }
@@ -57,6 +59,14 @@ message CreateRoleRequest {
 
 message CreateRolesResponse {
     string RoleId = 1;
+}
+
+message DeleteRoleRequest {
+    string Name = 1;
+}
+
+message DeleteRoleResponse {
+    bool Success = 1;
 }
 
 message GetUserRequest {

@@ -14,8 +14,8 @@ type DiscordClient interface {
 	GetAllRoles(guildID string) ([]*discordgo.Role, error)
 	GetUser(userID string) (*discordgo.User, error)
 	CreateRole(guildId string) (*discordgo.Role, error)
-	EditRole(guildId, roleId, name string, color, perm int, hoist, mention bool) (*discordgo.Role, error)
 	DeleteRole(guildId, roleId string) error
+	EditRole(guildId, roleId, name string, color, perm int, hoist, mention bool) (*discordgo.Role, error)
 }
 
 type client struct {
@@ -59,16 +59,16 @@ func (cl *client) CreateRole(guildId string) (*discordgo.Role, error) {
 	return cl.session.GuildRoleCreate(guildId)
 }
 
-func (cl *client) EditRole(guildId, roleId, name string, color, perm int, hoist, mention bool) (*discordgo.Role, error) {
-	cl.mutex.Lock()
-	defer cl.mutex.Unlock()
-	return cl.session.GuildRoleEdit(guildId, roleId, name, color, hoist, perm, mention)
-}
-
 func (cl *client) DeleteRole(guildId, roleId string) error {
 	cl.mutex.Lock()
 	defer cl.mutex.Unlock()
 	return cl.session.GuildRoleDelete(guildId, roleId)
+}
+
+func (cl *client) EditRole(guildId, roleId, name string, color, perm int, hoist, mention bool) (*discordgo.Role, error) {
+	cl.mutex.Lock()
+	defer cl.mutex.Unlock()
+	return cl.session.GuildRoleEdit(guildId, roleId, name, color, hoist, perm, mention)
 }
 
 func NewClient(token string) (DiscordClient, error) {
