@@ -146,6 +146,14 @@ func (dgh *discordGatewayHandler) GetAllRoles(ctx context.Context, request *prot
 }
 
 func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto.CreateRoleRequest, response *proto.CreateRolesResponse) error {
+	allRoles := dgh.roleMap.GetRoles()
+
+	for key := range allRoles {
+		if allRoles[key].Name == request.Name {
+			return fmt.Errorf("The role '%s' already exists", allRoles[key].Name)
+		}
+	}
+
 	role, err := dgh.client.CreateRole(dgh.discordServerId)
 	if err != nil {
 		return err
