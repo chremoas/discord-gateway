@@ -146,6 +146,11 @@ func (dgh *discordGatewayHandler) GetAllRoles(ctx context.Context, request *prot
 }
 
 func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto.CreateRoleRequest, response *proto.CreateRolesResponse) error {
+	err := dgh.roleMap.UpdateRoles()
+	if err != nil {
+		return err
+	}
+
 	allRoles := dgh.roleMap.GetRoles()
 
 	for key := range allRoles {
