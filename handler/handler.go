@@ -192,12 +192,14 @@ func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto
 func (dgh *discordGatewayHandler) DeleteRole(ctx context.Context, request *proto.DeleteRoleRequest, response *proto.DeleteRoleResponse) error {
 	role := dgh.roleMap.GetRoleByName(request.Name)
 
+	if role == nil {
+		return fmt.Errorf("Role doesn't exist: %s\n", request.Name)
+	}
+
 	err := dgh.client.DeleteRole(dgh.discordServerId, role.ID)
 	if err != nil {
 		return err
 	}
-
-	response.Success = true
 
 	return nil
 }
