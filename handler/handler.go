@@ -226,12 +226,13 @@ func (dgh *discordGatewayHandler) GetUser(ctx context.Context, request *proto.Ge
 }
 
 func (dgh *discordGatewayHandler) updateRoles() error {
-	if time.Now().Sub(dgh.lastRoleCall) >= time.Minute*5 {
-		dgh.lastRoleCall = time.Now()
+	// Going to not cache for now. Not sure we even need that or not. We'll address this later.
+	//if time.Now().Sub(dgh.lastRoleCall) >= time.Minute*5 {
+	//	dgh.lastRoleCall = time.Now()
 		return dgh.roleMap.UpdateRoles()
-	}
-
-	return nil
+	//}
+	//
+	//return nil
 }
 
 func validateRole(request *proto.CreateRoleRequest, role *discordgo.Role) bool {
