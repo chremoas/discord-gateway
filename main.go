@@ -9,7 +9,7 @@ import (
 	"github.com/micro/go-micro"
 )
 
-var Version = "1.0.0"
+var Version = "SET ME YOU KNOB"
 var service micro.Service
 var name = "discord"
 

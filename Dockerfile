@@ -1,17 +1,7 @@
-FROM arm32v6/alpine
-LABEL maintainer="maurer.it@gmail.com"
+FROM scratch
+MAINTAINER Brian Hechinger <wonko@4amlunch.net>
 
-RUN apk update && apk upgrade && apk add ca-certificates
-
-ADD ./discord-gateway /
-WORKDIR /
-
-RUN mkdir /etc/chremoas
+ADD discord-gateway-linux-amd64 discord-gateway
 VOLUME /etc/chremoas
 
-RUN rm -rf /var/cache/apk/*
-
-ENV MICRO_REGISTRY_ADDRESS chremoas-consul:8500
-
-CMD [""]
-ENTRYPOINT ["./discord-gateway", "--configuration_file", "/etc/chremoas/discord-gateway.yaml"]
+ENTRYPOINT ["/discord-gateway", "--configuration_file", "/etc/chremoas/auth-bot.yaml"]
