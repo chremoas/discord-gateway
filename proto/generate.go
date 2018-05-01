@@ -1,4 +1,3 @@
 package discord_gateway
 
-//go:generate protoc --go_out=plugins=micro:. gateway.proto
-//go:generate mockgen -package=discord_gateway -source=gateway.pb.go -destination=gateway_mocks.go DiscordGatewayClient
+//go:generate sh -c "protoc --proto_path=$GOPATH/src:. --micro_out=. --go_out=. *.proto"
