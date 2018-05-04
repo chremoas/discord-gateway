@@ -73,7 +73,9 @@ func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *pr
 		return err
 	}
 
+	fmt.Printf("Pre-GetAllMembers")
 	members, err := dgh.client.GetAllMembers(dgh.discordServerId, request.After, int(request.NumberPerPage))
+	fmt.Printf("Post-GetAllMembers")
 	if err != nil {
 		return err
 	}
