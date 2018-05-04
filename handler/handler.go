@@ -27,6 +27,10 @@ func (a ByPosition) Len() int           { return len(a) }
 func (a ByPosition) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByPosition) Less(i, j int) bool { return a[i].Position < a[j].Position }
 
+func (dgh *discordGatewayHandler) SendMessage(ctx context.Context, request *proto.SendMessageRequest, response *proto.NilMessage) error {
+	return dgh.client.SendMessage(request.ChannelId, request.Message)
+}
+
 func (dgh *discordGatewayHandler) UpdateMember(ctx context.Context, request *proto.UpdateMemberRequest, response *proto.UpdateMemberResponse) error {
 	var err error
 

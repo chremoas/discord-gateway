@@ -8,6 +8,7 @@ import (
 // This is a very thin wrapper around the discordgo api for testability purposes
 // and to easily keep track of what endpoints are being consumed
 type DiscordClient interface {
+	SendMessage(channelId, message string) error
 	UpdateMember(guildID, userID string, roles []string) error
 	RemoveMemberRole(guildID, userID, role string) error
 	GetAllMembers(guildID, after string, limit int) ([]*discordgo.Member, error)
@@ -21,6 +22,13 @@ type DiscordClient interface {
 type client struct {
 	session *discordgo.Session
 	mutex   sync.Mutex
+}
+
+func (cl *client) SendMessage(channelId, message string) error {
+	cl.mutex.Lock()
+	defer cl.mutex.Unlock()
+	_, ok := cl.session.ChannelMessageSend(channelId, message)
+	return ok
 }
 
 func (cl *client) UpdateMember(guildID, userID string, roles []string) error {

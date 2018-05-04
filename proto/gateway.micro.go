@@ -8,6 +8,8 @@ It is generated from these files:
 	gateway.proto
 
 It has these top-level messages:
+	NilMessage
+	SendMessageRequest
 	UpdateMemberRequest
 	UpdateMemberResponse
 	GetAllMembersRequest
@@ -61,6 +63,7 @@ type DiscordGatewayService interface {
 	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...client.CallOption) (*CreateRolesResponse, error)
 	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...client.CallOption) (*DeleteRoleResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...client.CallOption) (*GetUserResponse, error)
+	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...client.CallOption) (*NilMessage, error)
 }
 
 type discordGatewayService struct {
@@ -141,6 +144,16 @@ func (c *discordGatewayService) GetUser(ctx context.Context, in *GetUserRequest,
 	return out, nil
 }
 
+func (c *discordGatewayService) SendMessage(ctx context.Context, in *SendMessageRequest, opts ...client.CallOption) (*NilMessage, error) {
+	req := c.c.NewRequest(c.name, "DiscordGateway.SendMessage", in)
+	out := new(NilMessage)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for DiscordGateway service
 
 type DiscordGatewayHandler interface {
@@ -150,6 +163,7 @@ type DiscordGatewayHandler interface {
 	CreateRole(context.Context, *CreateRoleRequest, *CreateRolesResponse) error
 	DeleteRole(context.Context, *DeleteRoleRequest, *DeleteRoleResponse) error
 	GetUser(context.Context, *GetUserRequest, *GetUserResponse) error
+	SendMessage(context.Context, *SendMessageRequest, *NilMessage) error
 }
 
 func RegisterDiscordGatewayHandler(s server.Server, hdlr DiscordGatewayHandler, opts ...server.HandlerOption) {
@@ -160,6 +174,7 @@ func RegisterDiscordGatewayHandler(s server.Server, hdlr DiscordGatewayHandler, 
 		CreateRole(ctx context.Context, in *CreateRoleRequest, out *CreateRolesResponse) error
 		DeleteRole(ctx context.Context, in *DeleteRoleRequest, out *DeleteRoleResponse) error
 		GetUser(ctx context.Context, in *GetUserRequest, out *GetUserResponse) error
+		SendMessage(ctx context.Context, in *SendMessageRequest, out *NilMessage) error
 	}
 	type DiscordGateway struct {
 		discordGateway
@@ -194,4 +209,8 @@ func (h *discordGatewayHandler) DeleteRole(ctx context.Context, in *DeleteRoleRe
 
 func (h *discordGatewayHandler) GetUser(ctx context.Context, in *GetUserRequest, out *GetUserResponse) error {
 	return h.DiscordGatewayHandler.GetUser(ctx, in, out)
+}
+
+func (h *discordGatewayHandler) SendMessage(ctx context.Context, in *SendMessageRequest, out *NilMessage) error {
+	return h.DiscordGatewayHandler.SendMessage(ctx, in, out)
 }

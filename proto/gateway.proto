@@ -20,6 +20,14 @@ service DiscordGateway {
     };
     rpc GetUser (GetUserRequest) returns (GetUserResponse) {
     };
+    rpc SendMessage (SendMessageRequest) returns (NilMessage) {};
+}
+
+message NilMessage {}
+
+message SendMessageRequest {
+    string channelId = 1;
+    string message = 2;
 }
 
 message UpdateMemberRequest {
