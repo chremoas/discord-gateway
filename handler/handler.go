@@ -3,9 +3,9 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"github.com/bwmarrin/discordgo"
 	"github.com/chremoas/discord-gateway/discord"
 	proto "github.com/chremoas/discord-gateway/proto"
-	"github.com/bwmarrin/discordgo"
 	"golang.org/x/net/context"
 	"sort"
 	"time"
@@ -210,6 +210,32 @@ func (dgh *discordGatewayHandler) DeleteRole(ctx context.Context, request *proto
 	return nil
 }
 
+func (dgh *discordGatewayHandler) EditRole(ctx context.Context, request *proto.EditRoleRequest, response *proto.EditRoleResponse) error {
+	role := dgh.roleMap.GetRoleByName(request.Name)
+
+	if role == nil {
+		return fmt.Errorf("Role doesn't exist: %s\n", request.Name)
+	}
+
+	newRole, err := dgh.client.EditRole(
+		dgh.discordServerId,
+		role.ID,
+		request.Name,
+		int(request.Color),
+		int(request.Perm),
+		request.Hoist,
+		request.Mention,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("newRole: %+v\n", newRole)
+
+	return nil
+}
+
 func (dgh *discordGatewayHandler) GetUser(ctx context.Context, request *proto.GetUserRequest, response *proto.GetUserResponse) error {
 	user, err := dgh.client.GetUser(request.UserId)
 	if err != nil {
@@ -235,7 +261,7 @@ func (dgh *discordGatewayHandler) updateRoles() error {
 	// Going to not cache for now. Not sure we even need that or not. We'll address this later.
 	//if time.Now().Sub(dgh.lastRoleCall) >= time.Minute*5 {
 	//	dgh.lastRoleCall = time.Now()
-		return dgh.roleMap.UpdateRoles()
+	return dgh.roleMap.UpdateRoles()
 	//}
 	//
 	//return nil

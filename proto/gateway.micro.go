@@ -9,6 +9,8 @@ It is generated from these files:
 
 It has these top-level messages:
 	NilMessage
+	EditRoleRequest
+	EditRoleResponse
 	SendMessageRequest
 	UpdateMemberRequest
 	UpdateMemberResponse
@@ -62,6 +64,7 @@ type DiscordGatewayService interface {
 	GetAllRoles(ctx context.Context, in *GuildObjectRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...client.CallOption) (*CreateRolesResponse, error)
 	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...client.CallOption) (*DeleteRoleResponse, error)
+	EditRole(ctx context.Context, in *EditRoleRequest, opts ...client.CallOption) (*EditRoleResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...client.CallOption) (*GetUserResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...client.CallOption) (*NilMessage, error)
 }
@@ -134,6 +137,16 @@ func (c *discordGatewayService) DeleteRole(ctx context.Context, in *DeleteRoleRe
 	return out, nil
 }
 
+func (c *discordGatewayService) EditRole(ctx context.Context, in *EditRoleRequest, opts ...client.CallOption) (*EditRoleResponse, error) {
+	req := c.c.NewRequest(c.name, "DiscordGateway.EditRole", in)
+	out := new(EditRoleResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *discordGatewayService) GetUser(ctx context.Context, in *GetUserRequest, opts ...client.CallOption) (*GetUserResponse, error) {
 	req := c.c.NewRequest(c.name, "DiscordGateway.GetUser", in)
 	out := new(GetUserResponse)
@@ -162,6 +175,7 @@ type DiscordGatewayHandler interface {
 	GetAllRoles(context.Context, *GuildObjectRequest, *GetRoleResponse) error
 	CreateRole(context.Context, *CreateRoleRequest, *CreateRolesResponse) error
 	DeleteRole(context.Context, *DeleteRoleRequest, *DeleteRoleResponse) error
+	EditRole(context.Context, *EditRoleRequest, *EditRoleResponse) error
 	GetUser(context.Context, *GetUserRequest, *GetUserResponse) error
 	SendMessage(context.Context, *SendMessageRequest, *NilMessage) error
 }
@@ -173,6 +187,7 @@ func RegisterDiscordGatewayHandler(s server.Server, hdlr DiscordGatewayHandler, 
 		GetAllRoles(ctx context.Context, in *GuildObjectRequest, out *GetRoleResponse) error
 		CreateRole(ctx context.Context, in *CreateRoleRequest, out *CreateRolesResponse) error
 		DeleteRole(ctx context.Context, in *DeleteRoleRequest, out *DeleteRoleResponse) error
+		EditRole(ctx context.Context, in *EditRoleRequest, out *EditRoleResponse) error
 		GetUser(ctx context.Context, in *GetUserRequest, out *GetUserResponse) error
 		SendMessage(ctx context.Context, in *SendMessageRequest, out *NilMessage) error
 	}
@@ -205,6 +220,10 @@ func (h *discordGatewayHandler) CreateRole(ctx context.Context, in *CreateRoleRe
 
 func (h *discordGatewayHandler) DeleteRole(ctx context.Context, in *DeleteRoleRequest, out *DeleteRoleResponse) error {
 	return h.DiscordGatewayHandler.DeleteRole(ctx, in, out)
+}
+
+func (h *discordGatewayHandler) EditRole(ctx context.Context, in *EditRoleRequest, out *EditRoleResponse) error {
+	return h.DiscordGatewayHandler.EditRole(ctx, in, out)
 }
 
 func (h *discordGatewayHandler) GetUser(ctx context.Context, in *GetUserRequest, out *GetUserResponse) error {

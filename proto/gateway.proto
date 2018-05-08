@@ -8,22 +8,29 @@ enum MemberUpdateOperation {
 }
 
 service DiscordGateway {
-    rpc UpdateMember (UpdateMemberRequest) returns (UpdateMemberResponse) {
-    };
-    rpc GetAllMembers (GetAllMembersRequest) returns (GetMembersResponse) {
-    };
-    rpc GetAllRoles (GuildObjectRequest) returns (GetRoleResponse) {
-    };
-    rpc CreateRole (CreateRoleRequest) returns (CreateRolesResponse) {
-    };
-    rpc DeleteRole (DeleteRoleRequest) returns (DeleteRoleResponse) {
-    };
-    rpc GetUser (GetUserRequest) returns (GetUserResponse) {
-    };
+    rpc UpdateMember (UpdateMemberRequest) returns (UpdateMemberResponse) {};
+    rpc GetAllMembers (GetAllMembersRequest) returns (GetMembersResponse) {};
+    rpc GetAllRoles (GuildObjectRequest) returns (GetRoleResponse) {};
+    rpc CreateRole (CreateRoleRequest) returns (CreateRolesResponse) {};
+    rpc DeleteRole (DeleteRoleRequest) returns (DeleteRoleResponse) {};
+    rpc EditRole (EditRoleRequest) returns (EditRoleResponse) {};
+    rpc GetUser (GetUserRequest) returns (GetUserResponse) {};
     rpc SendMessage (SendMessageRequest) returns (NilMessage) {};
 }
 
 message NilMessage {}
+
+message EditRoleRequest {
+    string Name = 1;
+    int64 Color = 2;
+    int64 Perm = 3;
+    int64 Position = 4;
+    bool Hoist = 5;
+    bool Mention = 6;
+    bool Managed = 7;
+}
+
+message EditRoleResponse {}
 
 message SendMessageRequest {
     string channelId = 1;
