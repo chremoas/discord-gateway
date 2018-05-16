@@ -1,8 +1,16 @@
 package discord
 
 import (
+	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/chremoas/services-common/config"
+	redis "github.com/chremoas/services-common/redis"
+	"go.uber.org/zap"
 	"sync"
+	"time"
+	"strconv"
+	"reflect"
+	"github.com/fatih/structs"
 )
 
 // This is a very thin wrapper around the discordgo api for testability purposes
@@ -22,6 +30,7 @@ type DiscordClient interface {
 type client struct {
 	session *discordgo.Session
 	mutex   sync.Mutex
+	logger  *zap.Logger
 }
 
 func (cl *client) SendMessage(channelId, message string) error {
@@ -79,12 +88,73 @@ func (cl *client) EditRole(guildId, roleId, name string, color, perm int, hoist,
 	return cl.session.GuildRoleEdit(guildId, roleId, name, color, hoist, perm, mention)
 }
 
-func NewClient(token string) (DiscordClient, error) {
-	session, err := discordgo.New("Bot " + token)
+func NewClient(config *config.Configuration, logger *zap.Logger) (DiscordClient, error) {
+	session, err := discordgo.New("Bot " + config.Bot.BotToken)
+
 	var newClient client
 	if err != nil {
 		return nil, err
 	}
-	newClient = client{session: session}
+
+	newClient = client{session: session, logger: logger}
+
+	// Start up name resolution cache updater
+	go newClient.nameResolutionCacheUpdater(config)
+
 	return &newClient, nil
+}
+
+func (cl *client) nameResolutionCacheUpdater(config *config.Configuration) {
+	sugar := cl.logger.Sugar()
+	ticker := time.NewTicker(time.Minute * 1)
+
+	sugar.Info("Starting nameResolutionCacheUpdater")
+
+	for range ticker.C {
+		t := time.Now()
+		cl.cacheUpdaterPoll(config)
+		sugar.Infof("Poller finished [%s]", time.Since(t))
+	}
+}
+
+func (cl *client) cacheUpdaterPoll(config *config.Configuration) {
+	sugar := cl.logger.Sugar()
+	var numberPerPage = 1000
+	var memberCount = 1
+	var memberId = ""
+
+	addr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
+	redisClient := redis.Init(addr, config.Redis.Password, 1, config.LookupService("srv", "perms"))
+
+	for memberCount > 0 {
+		//longCtx, _ := context.WithTimeout(context.Background(), time.Second * 20)
+		//func (cl *client) GetAllMembers(guildID, after string, limit int) ([]*discordgo.Member, error) {
+		members, err := cl.GetAllMembers(config.Bot.DiscordServerId, memberId, numberPerPage)
+		if err != nil {
+			msg := fmt.Sprintf("nameResolutionCacheUpdater: GetAllMembers: %s", err.Error())
+			sugar.Error(msg)
+			continue
+		}
+
+		sugar.Infof("members: %v", reflect.TypeOf(members))
+
+		for m := range members {
+			user := members[m].User
+
+			_, err = redisClient.Client.HMSet(user.ID, structs.Map(user)).Result()
+
+			if err != nil {
+				sugar.Error(err)
+			}
+
+			oldNum, _ := strconv.Atoi(user.ID)
+			newNum, _ := strconv.Atoi(memberId)
+
+			if oldNum > newNum {
+				memberId = user.ID
+			}
+		}
+
+		memberCount = len(members)
+	}
 }

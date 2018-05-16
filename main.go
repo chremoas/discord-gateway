@@ -7,23 +7,34 @@ import (
 	proto "github.com/chremoas/discord-gateway/proto"
 	"github.com/chremoas/services-common/config"
 	"github.com/micro/go-micro"
+	"go.uber.org/zap"
 )
 
 var Version = "SET ME YOU KNOB"
 var service micro.Service
 var name = "discord"
+var logger *zap.Logger
 
 func main() {
 	service = config.NewService(Version, "gateway", name, initialize)
+	var err error
 
-	err := service.Run()
+	// TODO pick stuff up from the config
+	logger, err = zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+	logger.Info("Initialized logger")
+
+	err = service.Run()
 	if err != nil {
 		fmt.Printf("Service stopped (%s)\n", err.Error())
 	}
 }
 
 func initialize(config *config.Configuration) error {
-	client, err := discord.NewClient(config.Bot.BotToken)
+	client, err := discord.NewClient(config, logger)
 	if err != nil {
 		return err
 	}
