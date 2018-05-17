@@ -125,4 +125,5 @@ message User {
     bool Verified = 7;
     bool MFAEnabled = 8;
     bool Bot = 9;
+    string Nick = 10;
 }

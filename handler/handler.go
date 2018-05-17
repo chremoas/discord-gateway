@@ -87,6 +87,7 @@ func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *pr
 		protoMember := &proto.Member{
 			GuildId: member.GuildID,
 			User: &proto.User{
+				Nick:          member.Nick,
 				Id:            member.User.ID,
 				Token:         member.User.Token,
 				Bot:           member.User.Bot,
