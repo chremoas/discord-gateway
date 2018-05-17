@@ -1,16 +1,12 @@
 package discord
 
 import (
-	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/chremoas/services-common/config"
-	redis "github.com/chremoas/services-common/redis"
 	"go.uber.org/zap"
 	"sync"
-	"time"
+	"fmt"
 	"strconv"
-	"reflect"
-	"github.com/fatih/structs"
 )
 
 // This is a very thin wrapper around the discordgo api for testability purposes
@@ -20,6 +16,7 @@ type DiscordClient interface {
 	UpdateMember(guildID, userID string, roles []string) error
 	RemoveMemberRole(guildID, userID, role string) error
 	GetAllMembers(guildID, after string, limit int) ([]*discordgo.Member, error)
+	GetAllMembersAsSlice(guildID string) ([]*discordgo.Member, error)
 	GetAllRoles(guildID string) ([]*discordgo.Role, error)
 	GetUser(userID string) (*discordgo.User, error)
 	CreateRole(guildId string) (*discordgo.Role, error)
@@ -50,6 +47,39 @@ func (cl *client) GetAllMembers(guildID, after string, limit int) ([]*discordgo.
 	cl.mutex.Lock()
 	defer cl.mutex.Unlock()
 	return cl.session.GuildMembers(guildID, after, limit)
+}
+
+func (cl *client) GetAllMembersAsSlice(guildID string) ([]*discordgo.Member, error) {
+	sugar := cl.logger.Sugar()
+	var numberPerPage = 1000
+	var memberCount = 1
+	var memberId = ""
+	var output []*discordgo.Member
+
+	for memberCount > 0 {
+		members, err := cl.GetAllMembers(guildID, memberId, numberPerPage)
+		if err != nil {
+			msg := fmt.Sprintf("GetAllMembersAsSlice: GetAllMembers: %s", err.Error())
+			sugar.Error(msg)
+			return nil, err
+		}
+
+		for m := range members {
+			user := members[m].User
+			output = append(output, members[m])
+
+			oldNum, _ := strconv.Atoi(user.ID)
+			newNum, _ := strconv.Atoi(memberId)
+
+			if oldNum > newNum {
+				memberId = user.ID
+			}
+		}
+
+		memberCount = len(members)
+	}
+
+	return output, nil
 }
 
 func (cl *client) GetAllRoles(guildID string) ([]*discordgo.Role, error) {
@@ -99,62 +129,64 @@ func NewClient(config *config.Configuration, logger *zap.Logger) (DiscordClient,
 	newClient = client{session: session, logger: logger}
 
 	// Start up name resolution cache updater
-	go newClient.nameResolutionCacheUpdater(config)
+	//go newClient.nameResolutionCacheUpdater(config)
 
 	return &newClient, nil
 }
 
-func (cl *client) nameResolutionCacheUpdater(config *config.Configuration) {
-	sugar := cl.logger.Sugar()
-	ticker := time.NewTicker(time.Minute * 1)
+//
+// This is unused but I'm leaving it here for now.
+//
 
-	sugar.Info("Starting nameResolutionCacheUpdater")
+//func (cl *client) nameResolutionCacheUpdater(config *config.Configuration) {
+//	sugar := cl.logger.Sugar()
+//	ticker := time.NewTicker(time.Minute * 1)
+//
+//	sugar.Info("Starting nameResolutionCacheUpdater")
+//
+//	for range ticker.C {
+//		t := time.Now()
+//		cl.cacheUpdaterPoll(config)
+//		sugar.Infof("Poller finished [%s]", time.Since(t))
+//	}
+//}
 
-	for range ticker.C {
-		t := time.Now()
-		cl.cacheUpdaterPoll(config)
-		sugar.Infof("Poller finished [%s]", time.Since(t))
-	}
-}
-
-func (cl *client) cacheUpdaterPoll(config *config.Configuration) {
-	sugar := cl.logger.Sugar()
-	var numberPerPage = 1000
-	var memberCount = 1
-	var memberId = ""
-
-	addr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
-	redisClient := redis.Init(addr, config.Redis.Password, 1, config.LookupService("srv", "perms"))
-
-	for memberCount > 0 {
-		//longCtx, _ := context.WithTimeout(context.Background(), time.Second * 20)
-		//func (cl *client) GetAllMembers(guildID, after string, limit int) ([]*discordgo.Member, error) {
-		members, err := cl.GetAllMembers(config.Bot.DiscordServerId, memberId, numberPerPage)
-		if err != nil {
-			msg := fmt.Sprintf("nameResolutionCacheUpdater: GetAllMembers: %s", err.Error())
-			sugar.Error(msg)
-			continue
-		}
-
-		sugar.Infof("members: %v", reflect.TypeOf(members))
-
-		for m := range members {
-			user := members[m].User
-
-			_, err = redisClient.Client.HMSet(user.ID, structs.Map(user)).Result()
-
-			if err != nil {
-				sugar.Error(err)
-			}
-
-			oldNum, _ := strconv.Atoi(user.ID)
-			newNum, _ := strconv.Atoi(memberId)
-
-			if oldNum > newNum {
-				memberId = user.ID
-			}
-		}
-
-		memberCount = len(members)
-	}
-}
+//func (cl *client) cacheUpdaterPoll(config *config.Configuration) {
+//	sugar := cl.logger.Sugar()
+//	var numberPerPage = 1000
+//	var memberCount = 1
+//	var memberId = ""
+//
+//	addr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
+//	redisClient := redis.Init(addr, config.Redis.Password, 1, config.LookupService("srv", "perms"))
+//
+//	for memberCount > 0 {
+//		members, err := cl.GetAllMembers(config.Bot.DiscordServerId, memberId, numberPerPage)
+//		if err != nil {
+//			msg := fmt.Sprintf("nameResolutionCacheUpdater: GetAllMembers: %s", err.Error())
+//			sugar.Error(msg)
+//			continue
+//		}
+//
+//		sugar.Infof("members: %v", reflect.TypeOf(members))
+//
+//		for m := range members {
+//			user := members[m].User
+//
+//			_, err = redisClient.Client.HMSet(user.ID, structs.Map(user)).Result()
+//
+//			if err != nil {
+//				sugar.Error(err)
+//			}
+//
+//			oldNum, _ := strconv.Atoi(user.ID)
+//			newNum, _ := strconv.Atoi(memberId)
+//
+//			if oldNum > newNum {
+//				memberId = user.ID
+//			}
+//		}
+//
+//		memberCount = len(members)
+//	}
+//}

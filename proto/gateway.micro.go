@@ -61,6 +61,7 @@ var _ server.Option
 type DiscordGatewayService interface {
 	UpdateMember(ctx context.Context, in *UpdateMemberRequest, opts ...client.CallOption) (*UpdateMemberResponse, error)
 	GetAllMembers(ctx context.Context, in *GetAllMembersRequest, opts ...client.CallOption) (*GetMembersResponse, error)
+	GetAllMembersAsSlice(ctx context.Context, in *GetAllMembersRequest, opts ...client.CallOption) (*GetMembersResponse, error)
 	GetAllRoles(ctx context.Context, in *GuildObjectRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...client.CallOption) (*CreateRolesResponse, error)
 	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...client.CallOption) (*DeleteRoleResponse, error)
@@ -99,6 +100,16 @@ func (c *discordGatewayService) UpdateMember(ctx context.Context, in *UpdateMemb
 
 func (c *discordGatewayService) GetAllMembers(ctx context.Context, in *GetAllMembersRequest, opts ...client.CallOption) (*GetMembersResponse, error) {
 	req := c.c.NewRequest(c.name, "DiscordGateway.GetAllMembers", in)
+	out := new(GetMembersResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *discordGatewayService) GetAllMembersAsSlice(ctx context.Context, in *GetAllMembersRequest, opts ...client.CallOption) (*GetMembersResponse, error) {
+	req := c.c.NewRequest(c.name, "DiscordGateway.GetAllMembersAsSlice", in)
 	out := new(GetMembersResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -172,6 +183,7 @@ func (c *discordGatewayService) SendMessage(ctx context.Context, in *SendMessage
 type DiscordGatewayHandler interface {
 	UpdateMember(context.Context, *UpdateMemberRequest, *UpdateMemberResponse) error
 	GetAllMembers(context.Context, *GetAllMembersRequest, *GetMembersResponse) error
+	GetAllMembersAsSlice(context.Context, *GetAllMembersRequest, *GetMembersResponse) error
 	GetAllRoles(context.Context, *GuildObjectRequest, *GetRoleResponse) error
 	CreateRole(context.Context, *CreateRoleRequest, *CreateRolesResponse) error
 	DeleteRole(context.Context, *DeleteRoleRequest, *DeleteRoleResponse) error
@@ -184,6 +196,7 @@ func RegisterDiscordGatewayHandler(s server.Server, hdlr DiscordGatewayHandler, 
 	type discordGateway interface {
 		UpdateMember(ctx context.Context, in *UpdateMemberRequest, out *UpdateMemberResponse) error
 		GetAllMembers(ctx context.Context, in *GetAllMembersRequest, out *GetMembersResponse) error
+		GetAllMembersAsSlice(ctx context.Context, in *GetAllMembersRequest, out *GetMembersResponse) error
 		GetAllRoles(ctx context.Context, in *GuildObjectRequest, out *GetRoleResponse) error
 		CreateRole(ctx context.Context, in *CreateRoleRequest, out *CreateRolesResponse) error
 		DeleteRole(ctx context.Context, in *DeleteRoleRequest, out *DeleteRoleResponse) error
@@ -208,6 +221,10 @@ func (h *discordGatewayHandler) UpdateMember(ctx context.Context, in *UpdateMemb
 
 func (h *discordGatewayHandler) GetAllMembers(ctx context.Context, in *GetAllMembersRequest, out *GetMembersResponse) error {
 	return h.DiscordGatewayHandler.GetAllMembers(ctx, in, out)
+}
+
+func (h *discordGatewayHandler) GetAllMembersAsSlice(ctx context.Context, in *GetAllMembersRequest, out *GetMembersResponse) error {
+	return h.DiscordGatewayHandler.GetAllMembersAsSlice(ctx, in, out)
 }
 
 func (h *discordGatewayHandler) GetAllRoles(ctx context.Context, in *GuildObjectRequest, out *GetRoleResponse) error {

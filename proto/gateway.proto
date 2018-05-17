@@ -10,6 +10,7 @@ enum MemberUpdateOperation {
 service DiscordGateway {
     rpc UpdateMember (UpdateMemberRequest) returns (UpdateMemberResponse) {};
     rpc GetAllMembers (GetAllMembersRequest) returns (GetMembersResponse) {};
+    rpc GetAllMembersAsSlice (GetAllMembersRequest) returns (GetMembersResponse) {};
     rpc GetAllRoles (GuildObjectRequest) returns (GetRoleResponse) {};
     rpc CreateRole (CreateRoleRequest) returns (CreateRolesResponse) {};
     rpc DeleteRole (DeleteRoleRequest) returns (DeleteRoleResponse) {};

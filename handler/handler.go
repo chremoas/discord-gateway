@@ -125,6 +125,59 @@ func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *pr
 	return nil
 }
 
+func (dgh *discordGatewayHandler) GetAllMembersAsSlice(ctx context.Context, request *proto.GetAllMembersRequest, response *proto.GetMembersResponse) error {
+	err := dgh.updateRoles()
+	if err != nil {
+		return err
+	}
+
+	members, err := dgh.client.GetAllMembersAsSlice(dgh.discordServerId)
+	if err != nil {
+		return err
+	}
+
+	for _, member := range members {
+		protoMember := &proto.Member{
+			GuildId: member.GuildID,
+			User: &proto.User{
+				Id:            member.User.ID,
+				Token:         member.User.Token,
+				Bot:           member.User.Bot,
+				MFAEnabled:    member.User.MFAEnabled,
+				Verified:      member.User.Verified,
+				Avatar:        member.User.Avatar,
+				Discriminator: member.User.Discriminator,
+				Email:         member.User.Email,
+				Username:      member.User.Username,
+			},
+			Mute:     member.Mute,
+			Deaf:     member.Deaf,
+			JoinedAt: member.JoinedAt,
+			Nick:     member.Nick,
+		}
+
+		for _, roleId := range member.Roles {
+			role := dgh.roleMap.GetRoleById(roleId)
+
+			protoMember.Roles = append(protoMember.Roles, &proto.Role{
+				Id:          role.ID,
+				Name:        role.Name,
+				Position:    int32(role.Position),
+				Permissions: int32(role.Permissions),
+				Mentionable: role.Mentionable,
+				Managed:     role.Mentionable,
+				Hoist:       role.Hoist,
+				Color:       int32(role.Color),
+			})
+		}
+
+		response.Members = append(response.Members, protoMember)
+		sort.Sort(ByPosition(protoMember.Roles))
+	}
+
+	return nil
+}
+
 func (dgh *discordGatewayHandler) GetAllRoles(ctx context.Context, request *proto.GuildObjectRequest, response *proto.GetRoleResponse) error {
 	err := dgh.updateRoles()
 	if err != nil {
