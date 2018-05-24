@@ -22,6 +22,8 @@ type DiscordClient interface {
 	CreateRole(guildId string) (*discordgo.Role, error)
 	DeleteRole(guildId, roleId string) error
 	EditRole(guildId, roleId, name string, color, perm int, hoist, mention bool) (*discordgo.Role, error)
+	ChannelMessages(channelID string, limit int, beforeID, afterID, aroundID string) (st []*discordgo.Message, err error)
+	ChannelMessagesBulkDelete(channelID string, messages []string) (err error)
 }
 
 type client struct {
@@ -116,6 +118,18 @@ func (cl *client) EditRole(guildId, roleId, name string, color, perm int, hoist,
 	cl.mutex.Lock()
 	defer cl.mutex.Unlock()
 	return cl.session.GuildRoleEdit(guildId, roleId, name, color, hoist, perm, mention)
+}
+
+func (cl *client) ChannelMessages(channelID string, limit int, beforeID, afterID, aroundID string) (st []*discordgo.Message, err error) {
+	cl.mutex.Lock()
+	defer cl.mutex.Unlock()
+	return cl.ChannelMessages(channelID, limit, beforeID, afterID, aroundID)
+}
+
+func (cl *client) ChannelMessagesBulkDelete(channelID string, messages []string) (err error) {
+	cl.mutex.Lock()
+	defer cl.mutex.Unlock()
+	return cl.ChannelMessagesBulkDelete(channelID, messages)
 }
 
 func NewClient(config *config.Configuration, logger *zap.Logger) (DiscordClient, error) {

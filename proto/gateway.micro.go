@@ -27,6 +27,19 @@ It has these top-level messages:
 	Role
 	Member
 	User
+	GetMessagesRequest
+	Message
+	MessageReactions
+	Emoji
+	MessageEmbed
+	MessageEmbedFooter
+	MessageEmbedItem
+	MessageEmbedProvider
+	MessageEmbedAuthor
+	MessageEmbedField
+	MessageAttachment
+	GetMessagesResponse
+	BulkDeleteMessagesRequest
 */
 package discord_gateway
 
@@ -68,6 +81,8 @@ type DiscordGatewayService interface {
 	EditRole(ctx context.Context, in *EditRoleRequest, opts ...client.CallOption) (*EditRoleResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...client.CallOption) (*GetUserResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...client.CallOption) (*NilMessage, error)
+	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...client.CallOption) (*GetMessagesResponse, error)
+	BulkDeleteMessages(ctx context.Context, in *BulkDeleteMessagesRequest, opts ...client.CallOption) (*NilMessage, error)
 }
 
 type discordGatewayService struct {
@@ -178,6 +193,26 @@ func (c *discordGatewayService) SendMessage(ctx context.Context, in *SendMessage
 	return out, nil
 }
 
+func (c *discordGatewayService) GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...client.CallOption) (*GetMessagesResponse, error) {
+	req := c.c.NewRequest(c.name, "DiscordGateway.GetMessages", in)
+	out := new(GetMessagesResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *discordGatewayService) BulkDeleteMessages(ctx context.Context, in *BulkDeleteMessagesRequest, opts ...client.CallOption) (*NilMessage, error) {
+	req := c.c.NewRequest(c.name, "DiscordGateway.BulkDeleteMessages", in)
+	out := new(NilMessage)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for DiscordGateway service
 
 type DiscordGatewayHandler interface {
@@ -190,6 +225,8 @@ type DiscordGatewayHandler interface {
 	EditRole(context.Context, *EditRoleRequest, *EditRoleResponse) error
 	GetUser(context.Context, *GetUserRequest, *GetUserResponse) error
 	SendMessage(context.Context, *SendMessageRequest, *NilMessage) error
+	GetMessages(context.Context, *GetMessagesRequest, *GetMessagesResponse) error
+	BulkDeleteMessages(context.Context, *BulkDeleteMessagesRequest, *NilMessage) error
 }
 
 func RegisterDiscordGatewayHandler(s server.Server, hdlr DiscordGatewayHandler, opts ...server.HandlerOption) {
@@ -203,6 +240,8 @@ func RegisterDiscordGatewayHandler(s server.Server, hdlr DiscordGatewayHandler, 
 		EditRole(ctx context.Context, in *EditRoleRequest, out *EditRoleResponse) error
 		GetUser(ctx context.Context, in *GetUserRequest, out *GetUserResponse) error
 		SendMessage(ctx context.Context, in *SendMessageRequest, out *NilMessage) error
+		GetMessages(ctx context.Context, in *GetMessagesRequest, out *GetMessagesResponse) error
+		BulkDeleteMessages(ctx context.Context, in *BulkDeleteMessagesRequest, out *NilMessage) error
 	}
 	type DiscordGateway struct {
 		discordGateway
@@ -249,4 +288,12 @@ func (h *discordGatewayHandler) GetUser(ctx context.Context, in *GetUserRequest,
 
 func (h *discordGatewayHandler) SendMessage(ctx context.Context, in *SendMessageRequest, out *NilMessage) error {
 	return h.DiscordGatewayHandler.SendMessage(ctx, in, out)
+}
+
+func (h *discordGatewayHandler) GetMessages(ctx context.Context, in *GetMessagesRequest, out *GetMessagesResponse) error {
+	return h.DiscordGatewayHandler.GetMessages(ctx, in, out)
+}
+
+func (h *discordGatewayHandler) BulkDeleteMessages(ctx context.Context, in *BulkDeleteMessagesRequest, out *NilMessage) error {
+	return h.DiscordGatewayHandler.BulkDeleteMessages(ctx, in, out)
 }

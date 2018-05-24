@@ -31,6 +31,162 @@ func (dgh *discordGatewayHandler) SendMessage(ctx context.Context, request *prot
 	return dgh.client.SendMessage(request.ChannelId, request.Message)
 }
 
+// There has got to be a better way to do this.
+func (dgh *discordGatewayHandler) GetMessages(ctx context.Context, request *proto.GetMessagesRequest, response *proto.GetMessagesResponse) error {
+	var mentions []*proto.User
+	var attachments []*proto.MessageAttachment
+	var embeds []*proto.MessageEmbed
+	var reactions []*proto.MessageReactions
+	var messageEmbedFields []*proto.MessageEmbedField
+
+	fmt.Printf("Pre-ChannelMessages\n")
+	messages, err := dgh.client.ChannelMessages(request.ChannelID, int(request.Limit), request.BeforeID, request.AfterID, request.AroundID)
+	if (err != nil) {
+		fmt.Printf("ChannelMessages error: %s\n", err.Error())
+		return err
+	}
+	fmt.Printf("messages: %+v\n", messages)
+
+	for m := range messages {
+		mIt := messages[m]
+		for men := range mIt.Mentions {
+			menIt := mIt.Mentions[men]
+			mentions = append(mentions, &proto.User{
+				Id:            menIt.ID,
+				Email:         menIt.Email,
+				Username:      menIt.Username,
+				Avatar:        menIt.Avatar,
+				Discriminator: menIt.Discriminator,
+				Token:         menIt.Token,
+				Verified:      menIt.Verified,
+				MFAEnabled:    menIt.MFAEnabled,
+				Bot:           menIt.Bot,
+			})
+		}
+
+		for att := range mIt.Attachments {
+			attIt := mIt.Attachments[att]
+			attachments = append(attachments, &proto.MessageAttachment{
+				ID:       attIt.ID,
+				URL:      attIt.URL,
+				ProxyURL: attIt.ProxyURL,
+				Filename: attIt.Filename,
+				Width:    int64(attIt.Width),
+				Height:   int64(attIt.Height),
+				Size:     int64(attIt.Size),
+			})
+		}
+
+
+		for emb := range mIt.Embeds {
+			embIt := mIt.Embeds[emb]
+			for mef := range embIt.Fields {
+				mefIt := embIt.Fields[mef]
+				messageEmbedFields = append(messageEmbedFields, &proto.MessageEmbedField{
+					Name: mefIt.Name,
+					Value: mefIt.Value,
+					Inline: mefIt.Inline,
+				})
+			}
+
+			embeds = append(embeds, &proto.MessageEmbed{
+				URL: embIt.URL,
+				Type: embIt.Type,
+				Title: embIt.Title,
+				Description: embIt.Description,
+				Timestamp: embIt.Timestamp,
+				Color: int64(embIt.Color),
+				Footer: &proto.MessageEmbedFooter{
+					Text: embIt.Footer.Text,
+					IconURL: embIt.Footer.IconURL,
+					ProxyIconURL: embIt.Footer.ProxyIconURL,
+				},
+				Image: &proto.MessageEmbedItem{
+					URL: embIt.Image.URL,
+					ProxyURL: embIt.Image.ProxyURL,
+					Width: int64(embIt.Image.Width),
+					Height: int64(embIt.Image.Height),
+				},
+				Thumbnail: &proto.MessageEmbedItem{
+					URL: embIt.Thumbnail.URL,
+					ProxyURL: embIt.Thumbnail.ProxyURL,
+					Width: int64(embIt.Thumbnail.Width),
+					Height: int64(embIt.Thumbnail.Height),
+				},
+				Video: &proto.MessageEmbedItem{
+					URL: embIt.Video.URL,
+					ProxyURL: embIt.Video.ProxyURL,
+					Width: int64(embIt.Video.Width),
+					Height: int64(embIt.Video.Height),
+				},
+				Provider: &proto.MessageEmbedProvider{
+					URL: embIt.Provider.URL,
+					Name: embIt.Provider.Name,
+
+				},
+				Author: &proto.MessageEmbedAuthor{
+					URL: embIt.Author.URL,
+					Name: embIt.Author.Name,
+					IconURL: embIt.Author.IconURL,
+					ProxyIconURL: embIt.Author.ProxyIconURL,
+
+				},
+				Fields: messageEmbedFields,
+			})
+		}
+
+		for rea := range mIt.Reactions {
+			reaIt := mIt.Reactions[rea]
+			reactions = append(reactions, &proto.MessageReactions{
+				Count: int64(reaIt.Count),
+				Me: reaIt.Me,
+				Emoji: &proto.Emoji{
+					ID: reaIt.Emoji.ID,
+					Name: reaIt.Emoji.Name,
+					Roles: reaIt.Emoji.Roles,
+					Managed: reaIt.Emoji.Managed,
+					RequireColons: reaIt.Emoji.RequireColons,
+					Animated: reaIt.Emoji.Animated,
+				},
+			})
+		}
+
+		message := &proto.Message{
+			ID:              mIt.ID,
+			ChannelID:       mIt.ChannelID,
+			Content:         mIt.Content,
+			Timestamp:       string(mIt.Timestamp),
+			EditedTimestamp: string(mIt.EditedTimestamp),
+			MentionRoles:    mIt.MentionRoles,
+			Tts:             mIt.Tts,
+			MentionEveryone: mIt.MentionEveryone,
+			Author: &proto.User{
+				Id:            mIt.Author.ID,
+				Email:         mIt.Author.Email,
+				Username:      mIt.Author.Username,
+				Avatar:        mIt.Author.Avatar,
+				Discriminator: mIt.Author.Discriminator,
+				Token:         mIt.Author.Token,
+				Verified:      mIt.Author.Verified,
+				MFAEnabled:    mIt.Author.MFAEnabled,
+				Bot:           mIt.Author.Bot,
+			},
+			Attachments: attachments,
+			Embeds:      embeds,
+			Mentions:    mentions,
+			Reactions:   reactions,
+			Type:        int64(mIt.Type),
+		}
+
+		response.Messages = append(response.Messages, message)
+	}
+	return err
+}
+
+func (dgh *discordGatewayHandler) BulkDeleteMessages(ctx context.Context, request *proto.BulkDeleteMessagesRequest, response *proto.NilMessage) error {
+	return dgh.client.ChannelMessagesBulkDelete(request.ChannelID, request.Messages)
+}
+
 func (dgh *discordGatewayHandler) UpdateMember(ctx context.Context, request *proto.UpdateMemberRequest, response *proto.UpdateMemberResponse) error {
 	var err error
 

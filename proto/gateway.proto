@@ -16,7 +16,10 @@ service DiscordGateway {
     rpc DeleteRole (DeleteRoleRequest) returns (DeleteRoleResponse) {};
     rpc EditRole (EditRoleRequest) returns (EditRoleResponse) {};
     rpc GetUser (GetUserRequest) returns (GetUserResponse) {};
+
     rpc SendMessage (SendMessageRequest) returns (NilMessage) {};
+    rpc GetMessages (GetMessagesRequest) returns (GetMessagesResponse) {};
+    rpc BulkDeleteMessages (BulkDeleteMessagesRequest) returns (NilMessage) {};
 }
 
 message NilMessage {}
@@ -126,4 +129,110 @@ message User {
     bool MFAEnabled = 8;
     bool Bot = 9;
     string Nick = 10;
+}
+
+message GetMessagesRequest {
+    string ChannelID = 1;
+    int64 Limit = 2;
+    string BeforeID = 3;
+    string AfterID = 4;
+    string AroundID = 5;
+}
+
+message Message {
+    string ID = 1;
+    string ChannelID = 2;
+    string Content = 3;
+    string Timestamp = 4;
+    string EditedTimestamp = 5;
+    repeated string MentionRoles = 6;
+    bool Tts = 7;
+    bool MentionEveryone = 8;
+    User Author = 9;
+    repeated MessageAttachment Attachments = 10;
+    repeated MessageEmbed Embeds = 11;
+    repeated User Mentions = 12;
+    repeated MessageReactions Reactions = 13;
+    int64 Type = 14;
+}
+
+message MessageReactions {
+    int64 Count = 1;
+    bool Me = 2;
+    Emoji Emoji = 3;
+}
+
+message Emoji {
+    string ID = 1;
+    string Name = 2;
+    repeated string Roles = 3;
+    bool Managed = 4;
+    bool RequireColons = 5;
+    bool Animated = 6;
+}
+
+message MessageEmbed {
+    string URL = 1;
+    string Type = 2;
+    string Title = 3;
+    string Description = 4;
+    string Timestamp = 5;
+    int64 Color = 6;
+    MessageEmbedFooter Footer = 7;
+    MessageEmbedItem Image = 8;
+    MessageEmbedItem Thumbnail = 9 ;
+    MessageEmbedItem Video = 10;
+    MessageEmbedProvider Provider = 11;
+    MessageEmbedAuthor Author = 12;
+    repeated MessageEmbedField Fields = 13;
+}
+
+message MessageEmbedFooter {
+    string Text = 1;
+    string IconURL = 2;
+    string ProxyIconURL = 3;
+}
+
+message MessageEmbedItem {
+    string URL = 1;
+    string ProxyURL = 2;
+    int64 Width = 3;
+    int64 Height = 4;
+}
+
+message MessageEmbedProvider {
+    string URL = 1;
+    string Name = 2;
+}
+
+message MessageEmbedAuthor {
+    string URL = 1;
+    string Name = 2;
+    string IconURL = 3;
+    string ProxyIconURL = 4;
+}
+
+message MessageEmbedField {
+    string Name = 1;
+    string Value = 2;
+    bool Inline = 3;
+}
+
+message MessageAttachment {
+    string ID = 1;
+    string URL = 2;
+    string ProxyURL = 3;
+    string Filename = 4;
+    int64 Width = 5;
+    int64 Height = 6;
+    int64 Size = 7;
+}
+
+message GetMessagesResponse {
+    repeated Message Messages = 1;
+}
+
+message BulkDeleteMessagesRequest {
+    string ChannelID = 1;
+    repeated string Messages = 2;
 }
