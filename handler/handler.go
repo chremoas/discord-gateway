@@ -39,9 +39,9 @@ func (dgh *discordGatewayHandler) GetMessages(ctx context.Context, request *prot
 	var reactions []*proto.MessageReactions
 	var messageEmbedFields []*proto.MessageEmbedField
 
-	fmt.Printf("Pre-ChannelMessages\n")
+	fmt.Printf("Calling ChannelMessages(%s, %d, %s, %s, %s)\n", request.ChannelID, int(request.Limit), request.BeforeID, request.AfterID, request.AroundID)
 	messages, err := dgh.client.ChannelMessages(request.ChannelID, int(request.Limit), request.BeforeID, request.AfterID, request.AroundID)
-	if (err != nil) {
+	if err != nil {
 		fmt.Printf("ChannelMessages error: %s\n", err.Error())
 		return err
 	}
@@ -77,59 +77,56 @@ func (dgh *discordGatewayHandler) GetMessages(ctx context.Context, request *prot
 			})
 		}
 
-
 		for emb := range mIt.Embeds {
 			embIt := mIt.Embeds[emb]
 			for mef := range embIt.Fields {
 				mefIt := embIt.Fields[mef]
 				messageEmbedFields = append(messageEmbedFields, &proto.MessageEmbedField{
-					Name: mefIt.Name,
-					Value: mefIt.Value,
+					Name:   mefIt.Name,
+					Value:  mefIt.Value,
 					Inline: mefIt.Inline,
 				})
 			}
 
 			embeds = append(embeds, &proto.MessageEmbed{
-				URL: embIt.URL,
-				Type: embIt.Type,
-				Title: embIt.Title,
+				URL:         embIt.URL,
+				Type:        embIt.Type,
+				Title:       embIt.Title,
 				Description: embIt.Description,
-				Timestamp: embIt.Timestamp,
-				Color: int64(embIt.Color),
+				Timestamp:   embIt.Timestamp,
+				Color:       int64(embIt.Color),
 				Footer: &proto.MessageEmbedFooter{
-					Text: embIt.Footer.Text,
-					IconURL: embIt.Footer.IconURL,
+					Text:         embIt.Footer.Text,
+					IconURL:      embIt.Footer.IconURL,
 					ProxyIconURL: embIt.Footer.ProxyIconURL,
 				},
 				Image: &proto.MessageEmbedItem{
-					URL: embIt.Image.URL,
+					URL:      embIt.Image.URL,
 					ProxyURL: embIt.Image.ProxyURL,
-					Width: int64(embIt.Image.Width),
-					Height: int64(embIt.Image.Height),
+					Width:    int64(embIt.Image.Width),
+					Height:   int64(embIt.Image.Height),
 				},
 				Thumbnail: &proto.MessageEmbedItem{
-					URL: embIt.Thumbnail.URL,
+					URL:      embIt.Thumbnail.URL,
 					ProxyURL: embIt.Thumbnail.ProxyURL,
-					Width: int64(embIt.Thumbnail.Width),
-					Height: int64(embIt.Thumbnail.Height),
+					Width:    int64(embIt.Thumbnail.Width),
+					Height:   int64(embIt.Thumbnail.Height),
 				},
 				Video: &proto.MessageEmbedItem{
-					URL: embIt.Video.URL,
+					URL:      embIt.Video.URL,
 					ProxyURL: embIt.Video.ProxyURL,
-					Width: int64(embIt.Video.Width),
-					Height: int64(embIt.Video.Height),
+					Width:    int64(embIt.Video.Width),
+					Height:   int64(embIt.Video.Height),
 				},
 				Provider: &proto.MessageEmbedProvider{
-					URL: embIt.Provider.URL,
+					URL:  embIt.Provider.URL,
 					Name: embIt.Provider.Name,
-
 				},
 				Author: &proto.MessageEmbedAuthor{
-					URL: embIt.Author.URL,
-					Name: embIt.Author.Name,
-					IconURL: embIt.Author.IconURL,
+					URL:          embIt.Author.URL,
+					Name:         embIt.Author.Name,
+					IconURL:      embIt.Author.IconURL,
 					ProxyIconURL: embIt.Author.ProxyIconURL,
-
 				},
 				Fields: messageEmbedFields,
 			})
@@ -139,14 +136,14 @@ func (dgh *discordGatewayHandler) GetMessages(ctx context.Context, request *prot
 			reaIt := mIt.Reactions[rea]
 			reactions = append(reactions, &proto.MessageReactions{
 				Count: int64(reaIt.Count),
-				Me: reaIt.Me,
+				Me:    reaIt.Me,
 				Emoji: &proto.Emoji{
-					ID: reaIt.Emoji.ID,
-					Name: reaIt.Emoji.Name,
-					Roles: reaIt.Emoji.Roles,
-					Managed: reaIt.Emoji.Managed,
+					ID:            reaIt.Emoji.ID,
+					Name:          reaIt.Emoji.Name,
+					Roles:         reaIt.Emoji.Roles,
+					Managed:       reaIt.Emoji.Managed,
 					RequireColons: reaIt.Emoji.RequireColons,
-					Animated: reaIt.Emoji.Animated,
+					Animated:      reaIt.Emoji.Animated,
 				},
 			})
 		}
