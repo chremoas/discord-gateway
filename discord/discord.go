@@ -13,6 +13,7 @@ import (
 // and to easily keep track of what endpoints are being consumed
 type DiscordClient interface {
 	SendMessage(channelId, message string) error
+	ChannelMessageSendEmbed(channelID string, embed *discordgo.MessageEmbed)
 	UpdateMember(guildID, userID string, roles []string) error
 	RemoveMemberRole(guildID, userID, role string) error
 	GetAllMembers(guildID, after string, limit int) ([]*discordgo.Member, error)
@@ -34,6 +35,13 @@ func (cl *client) SendMessage(channelId, message string) error {
 	cl.mutex.Lock()
 	defer cl.mutex.Unlock()
 	_, ok := cl.session.ChannelMessageSend(channelId, message)
+	return ok
+}
+
+func (cl *client) ChannelMessageSendEmbed(channelId string, embed *discordgo.MessageEmbed) error {
+	cl.mutex.Lock()
+	defer cl.mutex.Unlock()
+	_, ok := cl.session.ChannelMessageSendEmbed(channelId, embed)
 	return ok
 }
 

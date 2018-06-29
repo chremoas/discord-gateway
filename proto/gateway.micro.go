@@ -27,6 +27,15 @@ It has these top-level messages:
 	Role
 	Member
 	User
+	SendMessageEmbed
+	MessageEmbed
+	MessageEmbedFooter
+	MessageEmbedImage
+	MessageEmbedThumbnail
+	MessageEmbedVideo
+	MessageEmbedProvider
+	MessageEmbedAuthor
+	MessageEmbedField
 */
 package discord_gateway
 
@@ -68,6 +77,7 @@ type DiscordGatewayService interface {
 	EditRole(ctx context.Context, in *EditRoleRequest, opts ...client.CallOption) (*EditRoleResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...client.CallOption) (*GetUserResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...client.CallOption) (*NilMessage, error)
+	SendEmbed(ctx context.Context, in *SendMessageEmbed, opts ...client.CallOption) (*NilMessage, error)
 }
 
 type discordGatewayService struct {
@@ -178,6 +188,16 @@ func (c *discordGatewayService) SendMessage(ctx context.Context, in *SendMessage
 	return out, nil
 }
 
+func (c *discordGatewayService) SendEmbed(ctx context.Context, in *SendMessageEmbed, opts ...client.CallOption) (*NilMessage, error) {
+	req := c.c.NewRequest(c.name, "DiscordGateway.SendEmbed", in)
+	out := new(NilMessage)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for DiscordGateway service
 
 type DiscordGatewayHandler interface {
@@ -190,6 +210,7 @@ type DiscordGatewayHandler interface {
 	EditRole(context.Context, *EditRoleRequest, *EditRoleResponse) error
 	GetUser(context.Context, *GetUserRequest, *GetUserResponse) error
 	SendMessage(context.Context, *SendMessageRequest, *NilMessage) error
+	SendEmbed(context.Context, *SendMessageEmbed, *NilMessage) error
 }
 
 func RegisterDiscordGatewayHandler(s server.Server, hdlr DiscordGatewayHandler, opts ...server.HandlerOption) {
@@ -203,6 +224,7 @@ func RegisterDiscordGatewayHandler(s server.Server, hdlr DiscordGatewayHandler, 
 		EditRole(ctx context.Context, in *EditRoleRequest, out *EditRoleResponse) error
 		GetUser(ctx context.Context, in *GetUserRequest, out *GetUserResponse) error
 		SendMessage(ctx context.Context, in *SendMessageRequest, out *NilMessage) error
+		SendEmbed(ctx context.Context, in *SendMessageEmbed, out *NilMessage) error
 	}
 	type DiscordGateway struct {
 		discordGateway
@@ -249,4 +271,8 @@ func (h *discordGatewayHandler) GetUser(ctx context.Context, in *GetUserRequest,
 
 func (h *discordGatewayHandler) SendMessage(ctx context.Context, in *SendMessageRequest, out *NilMessage) error {
 	return h.DiscordGatewayHandler.SendMessage(ctx, in, out)
+}
+
+func (h *discordGatewayHandler) SendEmbed(ctx context.Context, in *SendMessageEmbed, out *NilMessage) error {
+	return h.DiscordGatewayHandler.SendEmbed(ctx, in, out)
 }

@@ -17,6 +17,7 @@ service DiscordGateway {
     rpc EditRole (EditRoleRequest) returns (EditRoleResponse) {};
     rpc GetUser (GetUserRequest) returns (GetUserResponse) {};
     rpc SendMessage (SendMessageRequest) returns (NilMessage) {};
+    rpc SendEmbed (SendMessageEmbed) returns (NilMessage) {};
 }
 
 message NilMessage {}
@@ -34,8 +35,8 @@ message EditRoleRequest {
 message EditRoleResponse {}
 
 message SendMessageRequest {
-    string channelId = 1;
-    string message = 2;
+    string ChannelId = 1;
+    string Message = 2;
 }
 
 message UpdateMemberRequest {
@@ -126,4 +127,70 @@ message User {
     bool MFAEnabled = 8;
     bool Bot = 9;
     string Nick = 10;
+}
+
+message SendMessageEmbed {
+    string ChannelID = 1;
+    MessageEmbed Message = 2;
+}
+
+message MessageEmbed {
+    string URL = 1;
+    string Type = 2;
+    string Title = 3;
+    string Description = 4;
+    string Timestamp = 5;
+    int64 Color = 6;
+    MessageEmbedFooter Footer = 7;
+    MessageEmbedImage Image = 8;
+    MessageEmbedThumbnail Thumbnail = 9;
+    MessageEmbedVideo Video = 10;
+    MessageEmbedProvider Provider = 11;
+    MessageEmbedAuthor Author = 12;
+    repeated MessageEmbedField Fields = 13;
+}
+
+message MessageEmbedFooter {
+    string Text = 1;
+    string IconURL = 2;
+    string ProxyIconURL =3;
+}
+
+message MessageEmbedImage {
+    string URL = 1;
+    string ProxyURL = 2;
+    int64 Width = 3;
+    int64 Height = 4;
+}
+
+message MessageEmbedThumbnail {
+    string URL = 1;
+    string ProxyURL = 2;
+    int64 Width = 3;
+    int64 Height = 4;
+}
+
+message MessageEmbedVideo {
+    string URL = 1;
+    string ProxyURL = 2;
+    int64 Width = 3;
+    int64 Height = 4;
+}
+
+message MessageEmbedProvider {
+    string URL = 1;
+    string Name  = 2;
+}
+
+message MessageEmbedAuthor {
+    string URL = 1;
+    string Name = 2;
+    string IconURL = 3;
+    string ProxyIconURL = 4;
+}
+
+message MessageEmbedField {
+    string Name = 1;
+    string Value = 3;
+    bool Inline = 4;
 }
