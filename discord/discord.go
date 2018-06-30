@@ -13,7 +13,7 @@ import (
 // and to easily keep track of what endpoints are being consumed
 type DiscordClient interface {
 	SendMessage(channelId, message string) error
-	ChannelMessageSendEmbed(channelID string, embed *discordgo.MessageEmbed)
+	ChannelMessageSendEmbed(channelID string, embed *discordgo.MessageEmbed) error
 	UpdateMember(guildID, userID string, roles []string) error
 	RemoveMemberRole(guildID, userID, role string) error
 	GetAllMembers(guildID, after string, limit int) ([]*discordgo.Member, error)

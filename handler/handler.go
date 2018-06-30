@@ -74,6 +74,16 @@ func (dgh *discordGatewayHandler) SendEmbed(ctx context.Context, request *proto.
 		},
 	}
 
+	for m := range request.Message.Fields {
+		mef := request.Message.Fields[m]
+
+		message.Fields = append(message.Fields, &discordgo.MessageEmbedField{
+			Name: mef.Name,
+			Value: mef.Value,
+			Inline: mef.Inline,
+		})
+	}
+
 	return dgh.client.ChannelMessageSendEmbed(request.ChannelID, message)
 }
 
