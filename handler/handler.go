@@ -33,53 +33,71 @@ func (dgh *discordGatewayHandler) SendMessage(ctx context.Context, request *prot
 
 func (dgh *discordGatewayHandler) SendEmbed(ctx context.Context, request *proto.SendMessageEmbed, response *proto.NilMessage) error {
 	message := &discordgo.MessageEmbed{
-		URL: request.Message.URL,
-		Type: request.Message.Type,
-		Title: request.Message.Title,
+		URL:         request.Message.URL,
+		Type:        request.Message.Type,
+		Title:       request.Message.Title,
 		Description: request.Message.Description,
-		Timestamp: request.Message.Timestamp,
-		Color: int(request.Message.Color),
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: request.Message.Footer.Text,
-			IconURL: request.Message.Footer.IconURL,
+		Timestamp:   request.Message.Timestamp,
+		Color:       int(request.Message.Color),
+	}
+
+	if request.Message.Footer == (&proto.MessageEmbedFooter{}) {
+		message.Footer = &discordgo.MessageEmbedFooter{
+			Text:         request.Message.Footer.Text,
+			IconURL:      request.Message.Footer.IconURL,
 			ProxyIconURL: request.Message.Footer.ProxyIconURL,
-		},
-		Image: &discordgo.MessageEmbedImage{
-			URL: request.Message.Image.URL,
+		}
+	}
+
+	if request.Message.Image == (&proto.MessageEmbedImage{}) {
+		message.Image = &discordgo.MessageEmbedImage{
+			URL:      request.Message.Image.URL,
 			ProxyURL: request.Message.Image.ProxyURL,
-			Width: int(request.Message.Image.Width),
-			Height: int(request.Message.Image.Height),
-		},
-		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: request.Message.Thumbnail.URL,
+			Width:    int(request.Message.Image.Width),
+			Height:   int(request.Message.Image.Height),
+		}
+	}
+
+	if request.Message.Thumbnail == (&proto.MessageEmbedThumbnail{}) {
+		message.Thumbnail = &discordgo.MessageEmbedThumbnail{
+			URL:      request.Message.Thumbnail.URL,
 			ProxyURL: request.Message.Thumbnail.ProxyURL,
-			Width: int(request.Message.Thumbnail.Width),
-			Height: int(request.Message.Thumbnail.Height),
-		},
-		Video: &discordgo.MessageEmbedVideo{
-			URL: request.Message.Video.URL,
+			Width:    int(request.Message.Thumbnail.Width),
+			Height:   int(request.Message.Thumbnail.Height),
+		}
+	}
+
+	if request.Message.Video == (&proto.MessageEmbedVideo{}) {
+		message.Video = &discordgo.MessageEmbedVideo{
+			URL:      request.Message.Video.URL,
 			ProxyURL: request.Message.Video.ProxyURL,
-			Width: int(request.Message.Video.Width),
-			Height: int(request.Message.Video.Height),
-		},
-		Provider: &discordgo.MessageEmbedProvider{
-			URL: request.Message.Provider.URL,
+			Width:    int(request.Message.Video.Width),
+			Height:   int(request.Message.Video.Height),
+		}
+	}
+
+	if request.Message.Provider == (&proto.MessageEmbedProvider{}) {
+		message.Provider = &discordgo.MessageEmbedProvider{
+			URL:  request.Message.Provider.URL,
 			Name: request.Message.Provider.Name,
-		},
-		Author: &discordgo.MessageEmbedAuthor{
-			URL: request.Message.Author.URL,
-			Name: request.Message.Author.Name,
-			IconURL: request.Message.Author.IconURL,
+		}
+	}
+
+	if request.Message.Author == (&proto.MessageEmbedAuthor{}) {
+		message.Author = &discordgo.MessageEmbedAuthor{
+			URL:          request.Message.Author.URL,
+			Name:         request.Message.Author.Name,
+			IconURL:      request.Message.Author.IconURL,
 			ProxyIconURL: request.Message.Author.ProxyIconURL,
-		},
+		}
 	}
 
 	for m := range request.Message.Fields {
 		mef := request.Message.Fields[m]
 
 		message.Fields = append(message.Fields, &discordgo.MessageEmbedField{
-			Name: mef.Name,
-			Value: mef.Value,
+			Name:   mef.Name,
+			Value:  mef.Value,
 			Inline: mef.Inline,
 		})
 	}

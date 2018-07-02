@@ -39,8 +39,10 @@ func (cl *client) SendMessage(channelId, message string) error {
 }
 
 func (cl *client) ChannelMessageSendEmbed(channelId string, embed *discordgo.MessageEmbed) error {
+	sugar := cl.logger.Sugar()
 	cl.mutex.Lock()
 	defer cl.mutex.Unlock()
+	sugar.Infof("Sending Embed %+v to channel %s\n", embed, channelId)
 	_, ok := cl.session.ChannelMessageSendEmbed(channelId, embed)
 	return ok
 }
