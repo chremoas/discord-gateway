@@ -41,7 +41,7 @@ func (dgh *discordGatewayHandler) SendEmbed(ctx context.Context, request *proto.
 		Color:       int(request.Message.Color),
 	}
 
-	if request.Message.Footer == (&proto.MessageEmbedFooter{}) {
+	if request.Message.Footer != nil {
 		message.Footer = &discordgo.MessageEmbedFooter{
 			Text:         request.Message.Footer.Text,
 			IconURL:      request.Message.Footer.IconURL,
@@ -49,7 +49,7 @@ func (dgh *discordGatewayHandler) SendEmbed(ctx context.Context, request *proto.
 		}
 	}
 
-	if request.Message.Image == (&proto.MessageEmbedImage{}) {
+	if request.Message.Image != nil {
 		message.Image = &discordgo.MessageEmbedImage{
 			URL:      request.Message.Image.URL,
 			ProxyURL: request.Message.Image.ProxyURL,
@@ -58,7 +58,7 @@ func (dgh *discordGatewayHandler) SendEmbed(ctx context.Context, request *proto.
 		}
 	}
 
-	if request.Message.Thumbnail == (&proto.MessageEmbedThumbnail{}) {
+	if request.Message.Thumbnail != nil {
 		message.Thumbnail = &discordgo.MessageEmbedThumbnail{
 			URL:      request.Message.Thumbnail.URL,
 			ProxyURL: request.Message.Thumbnail.ProxyURL,
@@ -67,7 +67,7 @@ func (dgh *discordGatewayHandler) SendEmbed(ctx context.Context, request *proto.
 		}
 	}
 
-	if request.Message.Video == (&proto.MessageEmbedVideo{}) {
+	if request.Message.Video != nil {
 		message.Video = &discordgo.MessageEmbedVideo{
 			URL:      request.Message.Video.URL,
 			ProxyURL: request.Message.Video.ProxyURL,
@@ -76,14 +76,14 @@ func (dgh *discordGatewayHandler) SendEmbed(ctx context.Context, request *proto.
 		}
 	}
 
-	if request.Message.Provider == (&proto.MessageEmbedProvider{}) {
+	if request.Message.Provider != nil {
 		message.Provider = &discordgo.MessageEmbedProvider{
 			URL:  request.Message.Provider.URL,
 			Name: request.Message.Provider.Name,
 		}
 	}
 
-	if request.Message.Author == (&proto.MessageEmbedAuthor{}) {
+	if request.Message.Author != nil {
 		message.Author = &discordgo.MessageEmbedAuthor{
 			URL:          request.Message.Author.URL,
 			Name:         request.Message.Author.Name,
