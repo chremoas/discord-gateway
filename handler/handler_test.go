@@ -7,6 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/golang/mock/gomock"
 	. "github.com/smartystreets/goconvey/convey"
+	"go.uber.org/zap"
 	"golang.org/x/net/context"
 	"testing"
 	"time"
@@ -116,7 +117,7 @@ func TestDiscordClient_GetAllMembers(t *testing.T) {
 	)
 	//</editor-fold>
 
-	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 	Convey("Client construction err is nil", t, func() {
 		So(err, ShouldBeNil)
 	})
@@ -332,7 +333,7 @@ func TestDiscordClient_GetAllMembers_ExceptBotMember(t *testing.T) {
 	)
 	//</editor-fold>
 
-	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 	Convey("Client construction err is nil", t, func() {
 		So(err, ShouldBeNil)
 	})
@@ -522,7 +523,7 @@ func TestDiscordClient_GetAllMembers_OneMemberHasNoRoles(t *testing.T) {
 	)
 	//</editor-fold>
 
-	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 	Convey("Client construction err is nil", t, func() {
 		So(err, ShouldBeNil)
 	})
@@ -667,7 +668,7 @@ func TestDiscordClient_GetAllMembers_ExceptBotMember_ErrorOnGetUser(t *testing.T
 	)
 	//</editor-fold>
 
-	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 	Convey("Client construction err is nil", t, func() {
 		So(err, ShouldBeNil)
 	})
@@ -738,7 +739,7 @@ func TestDiscordClient_GetAllMembers_Error(t *testing.T) {
 	)
 	//</editor-fold>
 
-	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 	Convey("Client construction err is nil", t, func() {
 		So(err, ShouldBeNil)
 	})
@@ -763,7 +764,7 @@ func TestDiscordClient_GetAllMembers_ErrorOnRolesUpdate_DuringClientConstruction
 	mockClient.EXPECT().GetAllRoles(gomock.Any()).Return(nil, errors.New("dave I failed to update roles"))
 	//</editor-fold>
 
-	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, err := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 	Convey("Client construction err is not nil", t, func() {
 		So(err, ShouldNotBeNil)
 		So(client, ShouldBeNil)
@@ -846,7 +847,7 @@ func TestDiscordClient_GetAllRoles(t *testing.T) {
 	)
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	response := &proto.GetRoleResponse{}
 	client.GetAllRoles(context.Background(), &proto.GuildObjectRequest{}, response)
@@ -953,7 +954,7 @@ func TestDiscordClient_GetAllRoles_CacheTest(t *testing.T) {
 	)
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	response := &proto.GetRoleResponse{}
 	client.GetAllRoles(context.Background(), &proto.GuildObjectRequest{}, response)
@@ -1213,7 +1214,7 @@ func TestDiscordClient_RemoveMemberRoles(t *testing.T) {
 	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "R234567").Times(1).Return(nil)
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Remove roles (role 1 and role 2)", t, func() {
 		response := &proto.UpdateMemberResponse{}
@@ -1289,7 +1290,7 @@ func TestDiscordClient_RemoveMemberRole_ErrorFirstRemove(t *testing.T) {
 	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "R234567").Times(1).Return(nil)
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Update a members roles with an error", t, func() {
 		response := &proto.UpdateMemberResponse{}
@@ -1365,7 +1366,7 @@ func TestDiscordClient_RemoveMemberRole_ErrorSecondRemove(t *testing.T) {
 	mockClient.EXPECT().RemoveMemberRole("G123456", "U123456", "R234567").Times(1).Return(errors.New("dave I failed you on the second try"))
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Update a members roles with an error", t, func() {
 		response := &proto.UpdateMemberResponse{}
@@ -1438,7 +1439,7 @@ func TestDiscordClient_UpdateMember(t *testing.T) {
 	mockClient.EXPECT().UpdateMember("G123456", "U123456", []string{"R123456", "R234567"}).Times(1).Return(nil)
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Update a members roles from 3 to 2 roles", t, func() {
 		response := &proto.UpdateMemberResponse{}
@@ -1511,7 +1512,7 @@ func TestDiscordClient_UpdateMember_Error(t *testing.T) {
 	mockClient.EXPECT().UpdateMember("G123456", "U123456", []string{"R123456", "R234567"}).Times(1).Return(errors.New("dave I failed you"))
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Update a members roles with an error", t, func() {
 		response := &proto.UpdateMemberResponse{}
@@ -1607,7 +1608,7 @@ func TestDiscordClient_CreateRole(t *testing.T) {
 	)
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Given a client create a role with the given attributes", t, func() {
 		response := &proto.CreateRolesResponse{}
@@ -1704,7 +1705,7 @@ func TestDiscordClient_CreateRole_ResponseValidationFailure(t *testing.T) {
 	mockClient.EXPECT().DeleteRole("G123456", "R567890").Times(1).Return(nil)
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Given a client fail role creation due to invalid response from discord", t, func() {
 		response := &proto.CreateRolesResponse{}
@@ -1800,7 +1801,7 @@ func TestDiscordClient_CreateRole_ResponseValidationFailure_ErrorOnDelete(t *tes
 	mockClient.EXPECT().DeleteRole("G123456", "R567890").Times(1).Return(errors.New("dave I failed to delete after you validated"))
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Given a client fail role delete after invalid check", t, func() {
 		response := &proto.CreateRolesResponse{}
@@ -1872,7 +1873,7 @@ func TestDiscorClient_CreateRole_ErrorOnCreate(t *testing.T) {
 	mockClient.EXPECT().CreateRole("G123456").Times(1).Return(nil, errors.New("dave I failed you on create"))
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Given a client fail to create a role", t, func() {
 		response := &proto.CreateRolesResponse{}
@@ -1957,7 +1958,7 @@ func TestDiscorClient_CreateRole_ErrorOnEdit(t *testing.T) {
 	mockClient.EXPECT().DeleteRole("G123456", "R567890").Times(1).Return(nil)
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Given a client fail to edit a role", t, func() {
 		response := &proto.CreateRolesResponse{}
@@ -2042,7 +2043,7 @@ func TestDiscorClient_CreateRole_ErrorOnEditAndDelete(t *testing.T) {
 	mockClient.EXPECT().DeleteRole("G123456", "R567890").Times(1).Return(errors.New("dave I failed you on delete"))
 	//</editor-fold>
 
-	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	client, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Given a client fail to edit and delete a role", t, func() {
 		response := &proto.CreateRolesResponse{}
@@ -2113,7 +2114,7 @@ func TestDiscordClient_DeleteRole(t *testing.T) {
 		}, nil,
 	)
 
-	handler, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	handler, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Given a client delete a role", t, func() {
 		response := &proto.DeleteRoleResponse{}
@@ -2178,7 +2179,7 @@ func TestDiscordClient_DeleteRole_Error(t *testing.T) {
 		}, nil,
 	)
 
-	handler, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap)
+	handler, _ := NewDiscordGatewayHandler("G123456", mockClient, mockRoleMap, zap.NewNop())
 
 	Convey("Given a client delete a role", t, func() {
 		response := &proto.DeleteRoleResponse{}

@@ -40,7 +40,7 @@ func initialize(config *config.Configuration) error {
 	}
 	roleMap := discord.NewRoleMap(config.Bot.DiscordServerId, client)
 
-	theHandler, err := handler.NewDiscordGatewayHandler(config.Bot.DiscordServerId, client, roleMap)
+	theHandler, err := handler.NewDiscordGatewayHandler(config.Bot.DiscordServerId, client, roleMap, logger)
 	if err != nil {
 		return err
 	}

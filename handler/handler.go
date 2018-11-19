@@ -9,6 +9,7 @@ import (
 	"golang.org/x/net/context"
 	"sort"
 	"time"
+	"go.uber.org/zap"
 )
 
 type discordGatewayHandler struct {
@@ -18,6 +19,8 @@ type discordGatewayHandler struct {
 	roleMap discord.RoleMap
 
 	lastRoleCall time.Time
+
+	Logger *zap.Logger
 }
 
 //Provide a mechanism to provide roles in order of position as reported by Discord
@@ -28,7 +31,11 @@ func (a ByPosition) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByPosition) Less(i, j int) bool { return a[i].Position < a[j].Position }
 
 func (dgh *discordGatewayHandler) SendMessage(ctx context.Context, request *proto.SendMessageRequest, response *proto.NilMessage) error {
-	return dgh.client.SendMessage(request.ChannelId, request.Message)
+	err := dgh.client.SendMessage(request.ChannelId, request.Message)
+	if err != nil {
+		dgh.Logger.Error(err.Error())
+	}
+	return err
 }
 
 func (dgh *discordGatewayHandler) UpdateMember(ctx context.Context, request *proto.UpdateMemberRequest, response *proto.UpdateMemberResponse) error {
@@ -57,6 +64,8 @@ func (dgh *discordGatewayHandler) UpdateMember(ctx context.Context, request *pro
 
 	if err == nil {
 		response.Success = true
+	} else {
+		dgh.Logger.Error(err.Error())
 	}
 
 	return err
@@ -65,11 +74,13 @@ func (dgh *discordGatewayHandler) UpdateMember(ctx context.Context, request *pro
 func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *proto.GetAllMembersRequest, response *proto.GetMembersResponse) error {
 	err := dgh.updateRoles()
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
 	me, err := dgh.client.GetUser("@me")
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -77,6 +88,7 @@ func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *pr
 	members, err := dgh.client.GetAllMembers(dgh.discordServerId, request.After, int(request.NumberPerPage))
 	fmt.Printf("Post-GetAllMembers\n")
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -129,11 +141,13 @@ func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *pr
 func (dgh *discordGatewayHandler) GetAllMembersAsSlice(ctx context.Context, request *proto.GetAllMembersRequest, response *proto.GetMembersResponse) error {
 	err := dgh.updateRoles()
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
 	members, err := dgh.client.GetAllMembersAsSlice(dgh.discordServerId)
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -182,6 +196,7 @@ func (dgh *discordGatewayHandler) GetAllMembersAsSlice(ctx context.Context, requ
 func (dgh *discordGatewayHandler) GetAllRoles(ctx context.Context, request *proto.GuildObjectRequest, response *proto.GetRoleResponse) error {
 	err := dgh.updateRoles()
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -208,6 +223,7 @@ func (dgh *discordGatewayHandler) GetAllRoles(ctx context.Context, request *prot
 func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto.CreateRoleRequest, response *proto.CreateRolesResponse) error {
 	err := dgh.roleMap.UpdateRoles()
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -215,12 +231,14 @@ func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto
 
 	for key := range allRoles {
 		if allRoles[key].Name == request.Name {
+			dgh.Logger.Sugar().Errorf("The role '%s' already exists", allRoles[key].Name)
 			return fmt.Errorf("The role '%s' already exists", allRoles[key].Name)
 		}
 	}
 
 	role, err := dgh.client.CreateRole(dgh.discordServerId)
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -228,9 +246,11 @@ func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto
 	if err != nil {
 		deleteErr := dgh.client.DeleteRole(dgh.discordServerId, role.ID)
 		if deleteErr != nil {
+			dgh.Logger.Sugar().Errorf("edit failure (%s), delete failure (%s)", err.Error(), deleteErr.Error())
 			return errors.New(fmt.Sprintf("edit failure (%s), delete failure (%s)", err.Error(), deleteErr.Error()))
 		}
 
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -238,9 +258,11 @@ func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto
 	if !validateRole(request, editedRole) {
 		err = dgh.client.DeleteRole(dgh.discordServerId, role.ID)
 		if err != nil {
+			dgh.Logger.Sugar().Errorf("attempted to delete role due to invalid response but received error (%s)", err.Error())
 			return errors.New(fmt.Sprintf("attempted to delete role due to invalid response but received error (%s)", err.Error()))
 		}
 
+		dgh.Logger.Error("role create failed due to invalid response from discord")
 		return errors.New("role create failed due to invalid response from discord")
 	}
 
@@ -253,11 +275,13 @@ func (dgh *discordGatewayHandler) DeleteRole(ctx context.Context, request *proto
 	role := dgh.roleMap.GetRoleByName(request.Name)
 
 	if role == nil {
+		dgh.Logger.Sugar().Errorf("Role doesn't exist: %s", request.Name)
 		return fmt.Errorf("Role doesn't exist: %s\n", request.Name)
 	}
 
 	err := dgh.client.DeleteRole(dgh.discordServerId, role.ID)
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -268,6 +292,7 @@ func (dgh *discordGatewayHandler) EditRole(ctx context.Context, request *proto.E
 	role := dgh.roleMap.GetRoleByName(request.Name)
 
 	if role == nil {
+		dgh.Logger.Sugar().Errorf("Role doesn't exist: %s", request.Name)
 		return fmt.Errorf("Role doesn't exist: %s\n", request.Name)
 	}
 
@@ -282,6 +307,7 @@ func (dgh *discordGatewayHandler) EditRole(ctx context.Context, request *proto.E
 	)
 
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -293,6 +319,7 @@ func (dgh *discordGatewayHandler) EditRole(ctx context.Context, request *proto.E
 func (dgh *discordGatewayHandler) GetUser(ctx context.Context, request *proto.GetUserRequest, response *proto.GetUserResponse) error {
 	user, err := dgh.client.GetUser(request.UserId)
 	if err != nil {
+		dgh.Logger.Error(err.Error())
 		return err
 	}
 
@@ -315,7 +342,12 @@ func (dgh *discordGatewayHandler) updateRoles() error {
 	// Going to not cache for now. Not sure we even need that or not. We'll address this later.
 	//if time.Now().Sub(dgh.lastRoleCall) >= time.Minute*5 {
 	//	dgh.lastRoleCall = time.Now()
-	return dgh.roleMap.UpdateRoles()
+	err := dgh.roleMap.UpdateRoles()
+	if err != nil {
+		dgh.Logger.Sugar().Error(err.Error())
+	}
+
+	return err
 	//}
 	//
 	//return nil
@@ -333,10 +365,10 @@ func validateRole(request *proto.CreateRoleRequest, role *discordgo.Role) bool {
 	return valid
 }
 
-func NewDiscordGatewayHandler(discordServerId string, client discord.DiscordClient, roleMap discord.RoleMap) (proto.DiscordGatewayHandler, error) {
+func NewDiscordGatewayHandler(discordServerId string, client discord.DiscordClient, roleMap discord.RoleMap, logger *zap.Logger) (proto.DiscordGatewayHandler, error) {
 	err := roleMap.UpdateRoles()
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("error calling roleMap.UpdateRoles (%s)", err.Error()))
 	}
-	return &discordGatewayHandler{discordServerId: discordServerId, client: client, roleMap: roleMap, lastRoleCall: time.Now()}, nil
+	return &discordGatewayHandler{discordServerId: discordServerId, client: client, roleMap: roleMap, lastRoleCall: time.Now(), Logger: logger}, nil
 }
