@@ -112,7 +112,7 @@ func (dgh *discordGatewayHandler) GetAllMembers(ctx context.Context, request *pr
 			},
 			Mute:     member.Mute,
 			Deaf:     member.Deaf,
-			JoinedAt: member.JoinedAt,
+			JoinedAt: string(member.JoinedAt),
 			Nick:     member.Nick,
 		}
 
@@ -167,7 +167,7 @@ func (dgh *discordGatewayHandler) GetAllMembersAsSlice(ctx context.Context, requ
 			},
 			Mute:     member.Mute,
 			Deaf:     member.Deaf,
-			JoinedAt: member.JoinedAt,
+			JoinedAt: string(member.JoinedAt),
 			Nick:     member.Nick,
 		}
 
