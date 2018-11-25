@@ -126,6 +126,9 @@ func NewClient(config *config.Configuration, logger *zap.Logger) (DiscordClient,
 		return nil, err
 	}
 
+	// TODO: I still some code in discordgo using this so set it for now.
+	session.Debug = true
+	session.LogLevel = 3
 	newClient = client{session: session, logger: logger}
 
 	// Start up name resolution cache updater
