@@ -15,3 +15,5 @@
 
 application.yaml
 discord-gateway
+
+vendor/
