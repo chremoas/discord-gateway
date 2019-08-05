@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/bwmarrin/discordgo v0.19.0
-	github.com/chremoas/services-common v1.2.0
+	github.com/chremoas/services-common v1.2.1
 	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.3.2
 	github.com/micro/go-micro v1.8.1
