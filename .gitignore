@@ -16,5 +16,4 @@
 application.yaml
 discord-gateway
 
-vendor/
 /discord-gateway-linux-amd64
