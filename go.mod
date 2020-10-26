@@ -3,7 +3,7 @@ module github.com/chremoas/discord-gateway
 go 1.14
 
 require (
-	github.com/bwmarrin/discordgo v0.19.0
+	github.com/bwmarrin/discordgo v0.22.0
 	github.com/chremoas/services-common v1.3.1
 	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.3.2

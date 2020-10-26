@@ -848,6 +848,12 @@ func (s *State) OnInterface(se *Session, i interface{}) (err error) {
 				err = s.MemberAdd(t.Members[i])
 			}
 		}
+
+		if s.TrackPresences {
+			for _, p := range t.Presences {
+				err = s.PresenceAdd(t.GuildID, p)
+			}
+		}
 	case *GuildRoleCreate:
 		if s.TrackRoles {
 			err = s.RoleAdd(t.GuildID, t.Role)
@@ -882,10 +888,24 @@ func (s *State) OnInterface(se *Session, i interface{}) (err error) {
 		}
 	case *MessageUpdate:
 		if s.MaxMessageCount != 0 {
+			var old *Message
+			old, err = s.Message(t.ChannelID, t.ID)
+			if err == nil {
+				oldCopy := *old
+				t.BeforeUpdate = &oldCopy
+			}
+
 			err = s.MessageAdd(t.Message)
 		}
 	case *MessageDelete:
 		if s.MaxMessageCount != 0 {
+			var old *Message
+			old, err = s.Message(t.ChannelID, t.ID)
+			if err == nil {
+				oldCopy := *old
+				t.BeforeDelete = &oldCopy
+			}
+
 			err = s.MessageRemove(t.Message)
 		}
 	case *MessageDeleteBulk:

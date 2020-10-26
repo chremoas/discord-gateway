@@ -7,7 +7,7 @@ github.com/alecthomas/units
 github.com/armon/consul-api
 # github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878
 github.com/armon/go-metrics
-# github.com/bwmarrin/discordgo v0.19.0
+# github.com/bwmarrin/discordgo v0.22.0
 ## explicit
 github.com/bwmarrin/discordgo
 # github.com/cheekybits/genny v1.0.0
