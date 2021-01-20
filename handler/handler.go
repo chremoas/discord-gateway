@@ -3,13 +3,19 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"github.com/chremoas/discord-gateway/discord"
-	proto "github.com/chremoas/discord-gateway/proto"
-	"golang.org/x/net/context"
 	"sort"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
 	"go.uber.org/zap"
+	"golang.org/x/net/context"
+
+	"github.com/chremoas/discord-gateway/discord"
+	proto "github.com/chremoas/discord-gateway/proto"
+)
+
+const (
+	RoleCacheLength = time.Hour * 4
 )
 
 type discordGatewayHandler struct {
@@ -268,6 +274,8 @@ func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto
 
 	response.RoleId = editedRole.ID
 
+	// Reset cache as we've made changes to discord that need to be picked up next run
+	dgh.lastRoleCall = dgh.lastRoleCall.AddDate(0, 0, -1)
 	return nil
 }
 
@@ -285,6 +293,8 @@ func (dgh *discordGatewayHandler) DeleteRole(ctx context.Context, request *proto
 		return err
 	}
 
+	// Reset cache as we've made changes to discord that need to be picked up next run
+	dgh.lastRoleCall = dgh.lastRoleCall.AddDate(0, 0, -1)
 	return nil
 }
 
@@ -313,6 +323,8 @@ func (dgh *discordGatewayHandler) EditRole(ctx context.Context, request *proto.E
 
 	fmt.Printf("newRole: %+v\n", newRole)
 
+	// Reset cache as we've made changes to discord that need to be picked up next run
+	dgh.lastRoleCall = dgh.lastRoleCall.AddDate(0, 0, -1)
 	return nil
 }
 
@@ -338,19 +350,16 @@ func (dgh *discordGatewayHandler) GetUser(ctx context.Context, request *proto.Ge
 	return nil
 }
 
-func (dgh *discordGatewayHandler) updateRoles() error {
-	// Going to not cache for now. Not sure we even need that or not. We'll address this later.
-	//if time.Now().Sub(dgh.lastRoleCall) >= time.Minute*5 {
-	//	dgh.lastRoleCall = time.Now()
-	err := dgh.roleMap.UpdateRoles()
-	if err != nil {
-		dgh.Logger.Sugar().Error(err.Error())
+func (dgh *discordGatewayHandler) updateRoles() (err error) {
+	if time.Now().Sub(dgh.lastRoleCall) >= RoleCacheLength {
+		dgh.lastRoleCall = time.Now()
+		err = dgh.roleMap.UpdateRoles()
+		if err != nil {
+			dgh.Logger.Sugar().Error(err.Error())
+		}
 	}
 
-	return err
-	//}
-	//
-	//return nil
+	return
 }
 
 func validateRole(request *proto.CreateRoleRequest, role *discordgo.Role) bool {

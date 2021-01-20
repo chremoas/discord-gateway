@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 go build -ldflags \
     chmod 755 ${BINARY} && \
     cp ${BINARY} service
 
-FROM gcr.io/distroless/base-debian10
+FROM gcr.io/distroless/static
 MAINTAINER Brian Hechinger <wonko@4amlunch.net>
 VOLUME /etc/chremoas
 COPY --from=build /app/service /service

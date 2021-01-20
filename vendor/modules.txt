@@ -315,5 +315,4 @@ google.golang.org/grpc/tap
 gopkg.in/alecthomas/kingpin.v2
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
-# github.com/chremoas/discord-gateway => ../discord-gateway
 # github.com/hashicorp/consul => github.com/hashicorp/consul v1.5.1
