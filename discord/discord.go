@@ -1,12 +1,19 @@
 package discord
 
 import (
+	"fmt"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/chremoas/services-common/config"
 	"go.uber.org/zap"
-	"sync"
-	"fmt"
-	"strconv"
+)
+
+const (
+	cacheDefaultExpiration = time.Hour
+	cacheDefaultPurge      = 2 * time.Hour
 )
 
 // This is a very thin wrapper around the discordgo api for testability purposes
@@ -28,6 +35,28 @@ type client struct {
 	session *discordgo.Session
 	mutex   sync.Mutex
 	logger  *zap.Logger
+}
+
+func New(config *config.Configuration, logger *zap.Logger) (DiscordClient, error) {
+	session, err := discordgo.New("Bot " + config.Bot.BotToken)
+
+	var newClient client
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: I still some code in discordgo using this so set it for now.
+	session.Debug = true
+	session.LogLevel = 3
+	newClient = client{
+		session: session,
+		logger:  logger,
+	}
+
+	// Start up name resolution cache updater
+	//go newClient.nameResolutionCacheUpdater(config)
+
+	return &newClient, nil
 }
 
 func (cl *client) SendMessage(channelId, message string) error {
@@ -116,25 +145,6 @@ func (cl *client) EditRole(guildId, roleId, name string, color, perm int, hoist,
 	cl.mutex.Lock()
 	defer cl.mutex.Unlock()
 	return cl.session.GuildRoleEdit(guildId, roleId, name, color, hoist, perm, mention)
-}
-
-func NewClient(config *config.Configuration, logger *zap.Logger) (DiscordClient, error) {
-	session, err := discordgo.New("Bot " + config.Bot.BotToken)
-
-	var newClient client
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: I still some code in discordgo using this so set it for now.
-	session.Debug = true
-	session.LogLevel = 3
-	newClient = client{session: session, logger: logger}
-
-	// Start up name resolution cache updater
-	//go newClient.nameResolutionCacheUpdater(config)
-
-	return &newClient, nil
 }
 
 //
