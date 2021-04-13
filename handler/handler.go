@@ -265,7 +265,7 @@ func (dgh *discordGatewayHandler) CreateRole(ctx context.Context, request *proto
 		return err
 	}
 
-	editedRole, err := dgh.client.EditRole(dgh.discordServerId, role.ID, request.Name, int(request.Color), int(request.Permissions), request.Hoist, request.Mentionable)
+	editedRole, err := dgh.client.EditRole(dgh.discordServerId, role.ID, request.Name, int(request.Color), int64(request.Permissions), request.Hoist, request.Mentionable)
 	if err != nil {
 		deleteErr := dgh.client.DeleteRole(dgh.discordServerId, role.ID)
 		if deleteErr != nil {
@@ -330,7 +330,7 @@ func (dgh *discordGatewayHandler) EditRole(ctx context.Context, request *proto.E
 		role.ID,
 		request.Name,
 		int(request.Color),
-		int(request.Perm),
+		int64(request.Perm),
 		request.Hoist,
 		request.Mention,
 	)
@@ -373,7 +373,7 @@ func (dgh *discordGatewayHandler) GetUser(ctx context.Context, request *proto.Ge
 func validateRole(request *proto.CreateRoleRequest, role *discordgo.Role) bool {
 	valid := true
 
-	valid = valid && role.Permissions == int(request.Permissions)
+	valid = valid && role.Permissions == int64(request.Permissions)
 	valid = valid && role.Hoist == request.Hoist
 	valid = valid && role.Mentionable == request.Mentionable
 	valid = valid && role.Color == int(request.Color)

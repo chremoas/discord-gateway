@@ -28,7 +28,7 @@ type DiscordClient interface {
 	GetUser(userID string) (*discordgo.User, error)
 	CreateRole(guildId string) (*discordgo.Role, error)
 	DeleteRole(guildId, roleId string) error
-	EditRole(guildId, roleId, name string, color, perm int, hoist, mention bool) (*discordgo.Role, error)
+	EditRole(guildId, roleId, name string, color int, perm int64, hoist, mention bool) (*discordgo.Role, error)
 }
 
 type client struct {
@@ -141,7 +141,7 @@ func (cl *client) DeleteRole(guildId, roleId string) error {
 	return cl.session.GuildRoleDelete(guildId, roleId)
 }
 
-func (cl *client) EditRole(guildId, roleId, name string, color, perm int, hoist, mention bool) (*discordgo.Role, error) {
+func (cl *client) EditRole(guildId, roleId, name string, color int, perm int64, hoist, mention bool) (*discordgo.Role, error) {
 	cl.mutex.Lock()
 	defer cl.mutex.Unlock()
 	return cl.session.GuildRoleEdit(guildId, roleId, name, color, hoist, perm, mention)
